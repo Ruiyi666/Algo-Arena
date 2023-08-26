@@ -3,7 +3,7 @@
         <nav class="flex flex-col sm:flex-row px-4 items-center gap-4 text-white py-6">
             <RouterLink :to="{ name: 'home' }">
                 <div class="flex items-center gap-3 flex-1">
-                    Home
+                    <i class="fa-solid fa-home"></i> Home
                 </div>
             </RouterLink>
 
@@ -12,7 +12,7 @@
             </RouterLink>
 
             <RouterLink :to="{ name: 'about' }">
-                About
+                <i class="fa-solid fa-info-circle"></i> About
             </RouterLink>
         </nav>
     </header>
