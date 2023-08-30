@@ -18,7 +18,7 @@ import Player from './Player.vue';
 import Bullet from './Bullet.vue';
 import Controller from './Controller.vue';
 
-const socket = new WebSocket('ws://127.0.0.1:8000/ws/interactions/123/');
+const socket = new WebSocket('ws://127.0.0.1:8000/ws/123/');
 
 const props = defineProps({
     map_size: {

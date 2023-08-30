@@ -1,5 +1,6 @@
 from django.core.cache import cache
-
+from rest_framework.authtoken.models import Token
+from urllib.parse import parse_qs
 from channels.generic.websocket import (
     AsyncWebsocketConsumer,
     WebsocketConsumer,
@@ -15,6 +16,17 @@ from channels.generic.websocket import (
 
 class PlayerActionConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
+        params = parse_qs(self.scope["query_string"].decode("utf8"))
+        token = params.get("token", [None])[0]
+        if not token:
+            await self.close()
+            return
+        try:
+            token = Token.objects.get(key=token)
+        except Token.DoesNotExist:
+            await self.close()
+            return
+        self.user = token.user
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = "interactions_%s" % self.room_name
 
