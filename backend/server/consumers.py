@@ -47,7 +47,7 @@ class PlayerActionConsumer(AsyncJsonWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive_json(self, content):
-        print("content: ", content)
+        # print("content: ", content)
         # store the action in cache
         action_frame = cache.get(f"{self.room_group_name}-action_frame")
 
