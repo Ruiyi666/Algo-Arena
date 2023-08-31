@@ -10,6 +10,11 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/rankings',
+      name: 'rankings',
+      component: () => import('../views/RankingsView.vue')
+    },
+    {
       path: '/game',
       name: 'game',
       component: () => import('../views/GameView.vue')
@@ -19,13 +24,21 @@ const router = createRouter({
       name: 'about',
       component: () => import('../views/AboutView.vue')
     },
-    // 404
+    // page not found
     {
       path: '/:pathMatch(.*)*',
-      name: 'not-found',
+      name: '404',
       component: () => import('../views/404View.vue')
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  // console.log('to', to)
+  // console.log('from', from)
+  // console.log('next', next)
+  next()
+})
+
 
 export default router

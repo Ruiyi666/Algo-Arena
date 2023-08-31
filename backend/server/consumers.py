@@ -18,6 +18,7 @@ class PlayerActionConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         params = parse_qs(self.scope["query_string"].decode("utf8"))
         token = params.get("token", [None])[0]
+
         if not token:
             await self.close()
             return
