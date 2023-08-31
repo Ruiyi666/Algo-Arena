@@ -12,48 +12,58 @@ class Strategy(models.Model):
         related_name="strategies",
         verbose_name=_("User"),
     )
-    name = models.CharField(max_length=150)
-    description = models.TextField()
+    name = models.CharField(_("Name"), max_length=150)
+    description = models.TextField(_("Description"))
+    is_mannual = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_mannual = models.BooleanField(default=False)
 
 
 class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def winner(self):
-        return self.game_players.order_by("-score").first()
 
-
-class GamePlayer(models.Model):
+class Player(models.Model):
     game = models.ForeignKey(
         Game,
         on_delete=models.CASCADE,
-        related_name="game_players",
+        related_name="players",
         verbose_name=_("Game"),
     )
     strategy = models.ForeignKey(
         Strategy,
         on_delete=models.CASCADE,
-        related_name="game_players",
+        related_name="players",
         verbose_name=_("Strategy"),
     )
-    score = models.IntegerField(default=0)
 
 
 class FrameAction(models.Model):
-    game_player = models.ForeignKey(
-        GamePlayer,
+    player = models.ForeignKey(
+        Player,
         on_delete=models.CASCADE,
         related_name="frame_actions",
-        verbose_name=_("Actions"),
+        verbose_name=_("Player"),
     )
     frame = models.IntegerField(
         _("Frame"),
     )
     action = models.JSONField(
         _("Action"),
+    )
+
+
+class FrameState(models.Model):
+    game = models.ForeignKey(
+        Game,
+        on_delete=models.CASCADE,
+        related_name="frame_states",
+        verbose_name=_("Game"),
+    )
+    frame = models.IntegerField(
+        _("Frame"),
+    )
+    state = models.JSONField(
+        _("State"),
     )

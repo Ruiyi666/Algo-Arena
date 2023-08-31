@@ -7,7 +7,7 @@
     transform: 'rotate(' + rotate + 'deg)',
     transition: 'top ' + (1 / props.speed) + 's , left ' + (1 / props.speed) + 's , transform ' + (1 / props.speed) + 's ',
   }">
-    <i class="fas fa-arrow-up place-self-center text-secondary dark:text-secondary-dark"></i>
+    <i class="fas fa-arrow-up place-self-center"></i>
   </div>
 </template>
 

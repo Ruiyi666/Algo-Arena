@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { defineProps, toRefs } from 'vue';
+import { toRefs } from 'vue';
 const props = defineProps({
     rank: Number,
     username: String,
@@ -17,6 +17,4 @@ const { rank, username, rating } = toRefs(props);
 
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

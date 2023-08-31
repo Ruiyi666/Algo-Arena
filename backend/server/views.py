@@ -1,6 +1,4 @@
-from django.db.models.signals import post_save
 from django.conf import settings
-from django.dispatch import receiver
 from django.contrib.auth.models import User
 
 from rest_framework.viewsets import ModelViewSet
@@ -16,23 +14,16 @@ from rest_framework import permissions
 from .models import (
     Strategy,
     Game,
-    GamePlayer,
+    Player,
     FrameAction,
 )
 from .serializers import (
     UserSerializer,
     StrategySerializer,
     GameSerializer,
-    GamePlayerSerializer,
+    PlayerSerializer,
     FrameActionSerializer,
 )
-
-# Create your views here.
-
-# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-# def generate_token(sender, instance=None, created=False, **kwargs):
-#     if created:
-#         Token.objects.create(user=instance)
 
 
 class UserViewSet(ModelViewSet):
@@ -62,13 +53,19 @@ class StrategyViewSet(ModelViewSet):
     queryset = Strategy.objects.all()
     serializer_class = StrategySerializer
 
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        strategies = Strategy.objects.filter(user=request.user)
+        serializer = StrategySerializer(strategies, many=True)
+        return Response(serializer.data)
 
-class GamePlayerViewSet(ModelViewSet):
-    serializer_class = GamePlayerSerializer
+
+class PlayerViewSet(ModelViewSet):
+    serializer_class = PlayerSerializer
 
     def get_queryset(self):
         game_id = self.kwargs["game_id"]
-        return GamePlayer.objects.filter(game__id=game_id)
+        return Player.objects.filter(game__id=game_id)
 
 
 class FrameActionViewSet(ModelViewSet):
@@ -82,3 +79,16 @@ class FrameActionViewSet(ModelViewSet):
 class GameViewSet(ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        user_strategies = Strategy.objects.filter(user=request.user)
+        game_ids = (
+            Player.objects.filter(strategy__in=user_strategies)
+            .values_list("game_id", flat=True)
+            .distinct()
+        )
+        games = Game.objects.filter(id__in=game_ids)
+
+        serializer = GameSerializer(games, many=True)
+        return Response(serializer.data)

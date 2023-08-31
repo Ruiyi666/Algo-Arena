@@ -4,7 +4,7 @@ from .views import (
     UserViewSet,
     StrategyViewSet,
     GameViewSet,
-    GamePlayerViewSet,
+    PlayerViewSet,
     FrameActionViewSet,
 )
 
@@ -17,12 +17,12 @@ urlpatterns = [
     path("", include(router.urls)),
     path(
         "games/<int:game_id>/players/",
-        GamePlayerViewSet.as_view({"get": "list", "post": "create"}),
+        PlayerViewSet.as_view({"get": "list", "post": "create"}),
         name="game-players-list",
     ),
     path(
         "games/<int:game_id>/players/<int:pk>/",
-        GamePlayerViewSet.as_view(
+        PlayerViewSet.as_view(
             {"get": "retrieve", "put": "update", "delete": "destroy"}
         ),
         name="game-player-detail",

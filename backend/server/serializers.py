@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (
     Strategy,
     Game,
-    GamePlayer,
+    Player,
     FrameAction,
 )
 
@@ -21,9 +21,9 @@ class StrategySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class GamePlayerSerializer(serializers.ModelSerializer):
+class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = GamePlayer
+        model = Player
         fields = "__all__"
 
 
@@ -34,7 +34,7 @@ class FrameActionSerializer(serializers.ModelSerializer):
 
 
 class GameSerializer(serializers.ModelSerializer):
-    players = GamePlayerSerializer(many=True, read_only=True)
+    players = PlayerSerializer(many=True, read_only=True)
     actions = FrameActionSerializer(many=True, read_only=True)
 
     class Meta:

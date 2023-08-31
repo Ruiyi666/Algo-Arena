@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Map ref="map" :width="props.map_size" :height="props.map_size" :tiles="state.map">
+        <Map ref="map" :width="map_size" :height="map_size" :tiles="state.map">
             <Player v-for="player in state.players" :position="player.position" :direction="player.direction"
                 :color="player.color" :size="map?.cell_size" :key="player.key" />
 
@@ -12,24 +12,15 @@
 </template>
   
 <script setup>
-import { ref, onMounted, onBeforeUnmount, reactive, watch } from 'vue';
+import { ref, toRefs, onMounted, onBeforeUnmount, reactive, watch } from 'vue';
 import Map from './Map.vue';
 import Player from './Player.vue';
 import Bullet from './Bullet.vue';
 import Controller from './Controller.vue';
 
-const socket = new WebSocket('ws://127.0.0.1:8000/ws/123/');
+const map_size = ref(9);
 
-const props = defineProps({
-    map_size: {
-        type: Number,
-        default: 9,
-    },
-    player_count: {
-        type: Number,
-        default: 2,
-    },
-});
+const socket = new WebSocket('ws://127.0.0.1:8000/ws/123/');
 
 const emits = defineEmits([
 
