@@ -1,10 +1,10 @@
 <template>
     <div class="flex flexrow max-w-md">
-        <div class="flex bg-secondary h-8 w-8 justify-center m-2">
+        <div class="flex bg-base-100 h-8 w-8 justify-center m-2">
             <span>{{ cur_operation.action }}</span>
         </div>
         <TransitionGroup name="list">
-            <div class="flex bg-secondary h-8 w-8 justify-center m-2" v-for="op in operations" :key="op.id">
+            <div class="flex h-8 w-8 justify-center m-2" v-for="op in operations" :key="op.id">
                 <span>{{ op.action }}</span>
             </div>
         </TransitionGroup>
@@ -29,7 +29,7 @@ const operation_count = ref(0);
 const keys = {};
 
 function pressedKeys() {
-    if (keys['ArrowUp'] || keys['KeyW']) {    
+    if (keys['ArrowUp'] || keys['KeyW']) {
         operations.push({ id: operation_count.value++, action: 'up' });
     }
     if (keys['ArrowLeft'] || keys['KeyA']) {
@@ -47,7 +47,7 @@ function pressedKeys() {
     while (operations.length > 2) {
         operations.shift();
     }
-    
+
 }
 
 function handleOperation() {
@@ -57,7 +57,7 @@ function handleOperation() {
         emits('action', 'idle');
         return;
     }
-    emits('action', op.action);    
+    emits('action', op.action);
 }
 
 setInterval(handleOperation, 1000 / props.frequency);

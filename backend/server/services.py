@@ -1,10 +1,11 @@
 import threading
-from enum import Enum
-from django.core.cache import cache
+
+# from django.core.cache import cache
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .models import Strategy, Game, Player, FrameAction
+from .models import Strategy, Game, Player, FrameAction, FrameState
 from .serializers import GameSerializer
+from .environments import GameEnvironment, TerritoryTile
 
 
 class GameState:
@@ -43,24 +44,29 @@ class GameState:
         self._started = False
 
 
-class GameService:
+class GameServer:
     def __init__(self, room_id, max_n_players=2):
-        self.gamestate = GameState()
-
+        self.life = GameState()
+        self.environment: GameEnvironment = GameEnvironment()
         self.meta = {
             "room_id": room_id,
             "map_size": 9,
-            "max_n_players": max_n_players,
-            "player_count": 0,
+            "max_players": max_n_players,
+            "num_players": 0,
             "frequency": 6,
         }
 
         self.room_id = room_id
         self.game_id = Game.objects.create(meta=self.meta).id
 
-        self.players = []  # GamePlayer
+        self.players = []
+        self.states = []
         self.actions = []
         self.recent_action = {}
+
+    @property
+    def group_name(self):
+        return self.room_id
 
     def empty(self):
         return len(self.players) == 0
@@ -68,17 +74,11 @@ class GameService:
     def full(self):
         return len(self.players) == self.max_n_players
 
-    def save_and_close(self):
-        for action in self.actions:
-            pass
-        cache.delete(self.room_id)
+    def save_frame_action(self, frame: int, player_id: int, action: dict):
+        FrameAction.objects.create(frame=frame, player_id=player_id, action=action)
 
-    def save_to_cache(self):
-        cache.set(self.room_id, self, None)
-
-    @staticmethod
-    def load_from_cache(room_id):
-        return cache.get(room_id)
+    def save_frame_state(self, frame: int, state: dict):
+        FrameState.objects.create(frame=frame, state=state, game_id=self.game_id)
 
     def start_game_timer(self):
         self.game_timer = threading.Timer(
@@ -142,14 +142,56 @@ class GameService:
 
     def broadcase_game_action(self):
         game_action = self.collect_action()
+        self.environment.step(game_action)
         self.broadcast("sync.game.action", game_action)
 
     def broadcast_game_state(self):
         game = Game.objects.get(id=self.game_id)
         game_state = GameSerializer(game).data
+        self.environment.set(game_state)
         self.broadcast("sync.game.state", game_state)
 
     def broadcast(self, type, content):
         async_to_sync(get_channel_layer().group_send)(
             self.room_id, {"type": type, "content": content}
         )
+
+
+class GameServerFactory(object):
+    @classmethod
+    def create(cls, room_id: int) -> GameServer:
+        return GameServer(room_id)
+
+    @classmethod
+    def destroy(cls, instance: GameServer):
+        pass
+
+
+class GameServerRegistry(object):
+    _instances = {}
+
+    @classmethod
+    def register(cls, room_id):
+        if room_id not in cls._instances.keys():
+            cls._instances[room_id] = {
+                "instance": GameServerFactory.create(room_id),
+                "counter": 0,
+            }
+        cls._instances[room_id]["counter"] += 1
+        return cls._instances[room_id]["instance"]
+
+    @classmethod
+    def available(cls, room_id):
+        return room_id not in cls._instances.keys()
+
+    @classmethod
+    def unregister(cls, room_id):
+        if room_id not in cls._instances.keys():
+            return
+
+        cls._instances[room_id]["counter"] -= 1
+        if cls._instances[room_id]["counter"] == 0:
+            GameServerFactory.destroy(
+                cls._instances[room_id]["server"],
+            )
+            cls._instances.pop(room_id)

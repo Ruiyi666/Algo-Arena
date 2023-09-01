@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -16,6 +16,7 @@ from .models import (
     Game,
     Player,
     FrameAction,
+    FrameState,
 )
 from .serializers import (
     UserSerializer,
@@ -23,6 +24,7 @@ from .serializers import (
     GameSerializer,
     PlayerSerializer,
     FrameActionSerializer,
+    FrameStateSerializer,
 )
 
 
@@ -68,12 +70,20 @@ class PlayerViewSet(ModelViewSet):
         return Player.objects.filter(game__id=game_id)
 
 
-class FrameActionViewSet(ModelViewSet):
+class FrameActionViewSet(ReadOnlyModelViewSet):
     serializer_class = FrameActionSerializer
 
     def get_queryset(self):
         game_id = self.kwargs["game_id"]
         return FrameAction.objects.filter(game__id=game_id)
+
+
+class FrameStateViewSet(ReadOnlyModelViewSet):
+    serializer_class = FrameStateSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        return FrameState.objects.filter(game__id=game_id)
 
 
 class GameViewSet(ModelViewSet):

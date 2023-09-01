@@ -5,6 +5,7 @@ from .models import (
     Game,
     Player,
     FrameAction,
+    FrameState,
 )
 
 
@@ -33,9 +34,16 @@ class FrameActionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class FrameStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FrameState
+        fields = "__all__"
+
+
 class GameSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True, read_only=True)
     actions = FrameActionSerializer(many=True, read_only=True)
+    states = FrameStateSerializer(many=True, read_only=True)
 
     class Meta:
         model = Game

@@ -1,5 +1,6 @@
 <template>
     <div>
+        <CodeInput />
         <Map ref="map" :width="map_size" :height="map_size" :tiles="state.map">
             <Player v-for="player in state.players" :position="player.position" :direction="player.direction"
                 :color="player.color" :size="map?.cell_size" :key="player.key" />
@@ -17,6 +18,14 @@ import Map from './Map.vue';
 import Player from './Player.vue';
 import Bullet from './Bullet.vue';
 import Controller from './Controller.vue';
+import CodeInput from './CodeInput.vue';
+
+const props = defineProps({
+    map_size: {
+        type: Number,
+        default: 9
+    }
+})
 
 const map_size = ref(9);
 
