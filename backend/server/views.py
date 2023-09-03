@@ -48,7 +48,11 @@ class UserViewSet(ModelViewSet):
         user.set_password(serializer.validated_data["password"])
         user.save()
 
-        Strategy.objects.create(user=user, name="mannual", is_mannual=True)
+        Strategy.objects.create(
+            user=user, 
+            name=f"{user.username}-default", 
+            is_mannual=True
+        )
 
 
 class StrategyViewSet(ModelViewSet):

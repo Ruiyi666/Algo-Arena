@@ -45,15 +45,15 @@ const props = defineProps({
   },
   speed: {
     type: Number,
-    default: 4,
+    default: 1,
   },
 })
 
 const colorList = [
-  'text-red-500 dark:text-red-700',
-  'text-blue-500 dark:text-blue-700',
-  'text-green-500 dark:text-green-700',
-  'text-yellow-500 dark:text-yellow-700',
+  'text-info-content',
+  'text-warning-content',
+  'text-success-content',
+  'text-error-content',
 ];
 
 const rotate = computed(() => {

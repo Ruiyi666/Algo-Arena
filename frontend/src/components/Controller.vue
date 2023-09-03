@@ -1,14 +1,13 @@
 <template>
-    <div class="flex flexrow max-w-md">
-        <div class="flex bg-base-100 h-8 w-8 justify-center m-2">
+    <div class="flex max-w-md flexrow">
+        <div class="flex justify-center w-8 h-8 m-2 bg-base-100">
             <span>{{ cur_operation.action }}</span>
         </div>
         <TransitionGroup name="list">
-            <div class="flex h-8 w-8 justify-center m-2" v-for="op in operations" :key="op.id">
+            <div class="flex justify-center w-8 h-8 m-2" v-for="op in operations" :key="op.id">
                 <span>{{ op.action }}</span>
             </div>
         </TransitionGroup>
-
     </div>
 </template>
 
@@ -25,7 +24,7 @@ const emits = defineEmits(['action']);
 const operations = reactive([]);
 const cur_operation = reactive({ id: 0, direction: 'L' });
 const operation_count = ref(0);
-
+const handle_id = ref(null);
 const keys = {};
 
 function pressedKeys() {
@@ -60,7 +59,7 @@ function handleOperation() {
     emits('action', op.action);
 }
 
-setInterval(handleOperation, 1000 / props.frequency);
+
 
 onMounted(() => {
     // listen to key events
@@ -79,6 +78,17 @@ onMounted(() => {
 onBeforeUnmount(() => {
     // remove key event listener
     // window.removeEventListener('keydown', handleKeydown);
+});
+
+defineExpose({
+    start: () => {
+        handle_id.value = setInterval(handleOperation, 1000 / props.frequency);
+    },
+    stop: () => {
+        if (handle_id.value) {
+            clearInterval(handle_id.value);
+        }
+    }
 });
 
 </script>

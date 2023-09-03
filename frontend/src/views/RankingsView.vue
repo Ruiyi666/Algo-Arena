@@ -3,7 +3,7 @@ import Rankings from '../components/Rankings.vue';
 </script>
 
 <template>
-  <main class="flex justify-center bg-base-100">
+  <main class="bg-base-200">
     <Rankings />
   </main>
 </template>

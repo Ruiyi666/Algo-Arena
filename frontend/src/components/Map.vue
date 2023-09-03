@@ -1,5 +1,5 @@
 <template>
-    <div class="m-8 p-4 border border-gray-300 rounded-md max-w-md">
+    <div class="w-3/4 p-4 m-8 shadow-2xl bg-base-100 card md:max-w-xl border-neutral">
         <div ref="map" :class="{
             'grid-cols-1': width === 1,
             'grid-cols-2': width === 2,
@@ -14,7 +14,7 @@
             'grid-cols-11': width === 11,
             'grid-cols-12': width === 12,
         }" class="relative grid">
-            <Tile v-for="tile in props.tiles" :color="tile.color" />
+            <Tile v-for="tile in props.tiles" :color="tile.color" :speed="props.speed" />
             <slot></slot>
         </div>
     </div>
@@ -35,6 +35,10 @@ const props = defineProps({
     tiles: {
         type: Array,
         default: () => []
+    },
+    speed: {
+        type: Number,
+        default: 4
     }
 })
 
@@ -47,6 +51,10 @@ function getCellSize() {
         cell_size.value = map.value.offsetWidth / width.value;
     }
 }
+
+watch(() => props.tiles, () => {
+    getCellSize();
+})
 
 onMounted(() => {
     getCellSize();

@@ -22,7 +22,7 @@ class Strategy(models.Model):
 class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    metadata = models.JSONField(_("Metadata"), default=dict)
 
 class Player(models.Model):
     game = models.ForeignKey(
@@ -37,7 +37,7 @@ class Player(models.Model):
         related_name="players",
         verbose_name=_("Strategy"),
     )
-
+    score = models.IntegerField(_("Score"), default=0)
 
 class FrameAction(models.Model):
     player = models.ForeignKey(

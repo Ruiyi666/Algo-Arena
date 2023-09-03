@@ -1,13 +1,13 @@
 <template>
-  <div class="absolute grid rounded-full" :class="colorList[props.color]" :style="{
-    top: props.position.y * props.size + 'px',
-    left: props.position.x * props.size + 'px',
-    width: props.size + 'px',
-    height: props.size + 'px',
+  <div class="absolute grid border rounded-full alert-error" :class="bg_colors[props.color]" :style="{
+    top: (props.position.y * props.size + props.padding) + 'px',
+    left: (props.position.x * props.size + props.padding) + 'px',
+    width: (props.size - 2 * props.padding) + 'px',
+    height: (props.size - 2 * props.padding) + 'px',
     transform: 'rotate(' + rotate + 'deg)',
     transition: 'top ' + (1 / props.speed) + 's , left ' + (1 / props.speed) + 's , transform ' + (1 / props.speed) + 's ',
   }">
-    <i class="fas fa-arrow-up place-self-center"></i>
+    <i class="fa-solid fa-arrow-up place-self-center" :class="text_colors[props.color]"></i>
   </div>
 </template>
 
@@ -47,14 +47,25 @@ const props = defineProps({
     type: Number,
     default: 2,
   },
+  padding: {
+    type: Number,
+    default: 2,
+  }
 });
 
-const colorList = [
-  'bg-red-500 dark:bg-red-700',
-  'bg-blue-500 dark:bg-blue-700',
-  'bg-green-500 dark:bg-green-700',
-  'bg-yellow-500 dark:bg-yellow-700',
+const bg_colors = [
+  'bg-info',
+  'bg-warning',
+  'bg-success',
+  'bg-error',
 ];
+
+const text_colors = [
+  'text-info-content',
+  'text-warning-content',
+  'text-success-content',
+  'text-error-content',
+]
 
 const last_direction = ref(0);
 

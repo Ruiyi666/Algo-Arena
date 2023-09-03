@@ -16,8 +16,8 @@
                             <i class="fa-solid fa-trophy"></i> Rankings
                         </RouterLink>
                     </li>
-                    <li>
-                        <RouterLink :to="{ name: 'game' }" class="">
+                    <li v-if="isLogin">
+                        <RouterLink :to="{ name: 'game' }">
                             <i class="fa-solid fa-gamepad"></i> Game
                         </RouterLink>
                     </li>
@@ -44,7 +44,7 @@
                         <span class="hidden md:inline">Rankings</span>
                     </RouterLink>
                 </li>
-                <li>
+                <li v-if="isLogin">
                     <RouterLink :to="{ name: 'game' }" class="" :class="{ 'active': $route.name === 'game' }">
                         <i class="fa-solid fa-gamepad"></i>
                         <span class="hidden md:inline">Game</span>
@@ -64,24 +64,56 @@
                 <i class="fill-current swap-off fa-solid fa-sun"></i>
                 <i class="fill-current swap-on fa-solid fa-moon"></i>
             </label>
-            <button class="btn btn-ghost btn-circle">
-                <i class="fa-solid fa-bell"></i>
-            </button>
-            <button class="btn btn-ghost btn-circle">
-                <div class="indicator">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span class="badge badge-xs badge-primary indicator-item"></span>
-                </div>
+
+            <div v-if="isLogin" class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                    <i class="fa-solid fa-user"></i>
+                </label>
+                <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                    <li>
+                        <a class="justify-between">
+                            Profile
+                            <span class="badge">New</span>
+                        </a>
+                    </li>
+                    <li><a>Settings</a></li>
+                    <li><a @click="handleLogout">Logout</a></li>
+                </ul>
+            </div>
+
+            <button v-else class="btn btn-ghost btn-circle">
+                <RouterLink :to="{ name: 'home' }">
+                    <div class="indicator">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="badge badge-xs badge-primary indicator-item"></span>
+                    </div>
+                </RouterLink>
             </button>
         </div>
     </div>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router'
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { useStore } from 'vuex';
+import { RouterLink, useRouter } from 'vue-router'
+import axios from 'axios'
+
+const props = defineProps({
+    host: {
+        type: String,
+        default: '127.0.0.1'
+    },
+    port: {
+        type: Number,
+        default: 8000
+    },
+})
 
 const isDark = ref(false);
+const router = useRouter();
+const store = useStore();
+const isLogin = computed(() => store.state.isLoggedIn);
 
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -103,5 +135,23 @@ onBeforeUnmount(() => {
     // localStorage.removeItem('theme');
 });
 
-
+const handleLogout = async () => {
+    try {
+        const url = `http://${props.host}:${props.port}/api-token-auth/`
+        const response = await axios.delete(url, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        })   
+        if (response.status === 200) {
+            console.log('User registered successfully')
+        } else {
+            console.error('Failed to register')
+        }
+    } catch (error) {
+        console.error('Registration error:', error)
+    }
+    store.commit('logout')
+    router.push({ name: 'home' });
+}
 </script>

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <footer class="p-10 footer footer-center bg-base-200 text-base-content">
+        <footer class="p-10 footer footer-center bg-base-300 text-base-content">
             <div class="grid grid-flow-col gap-4">
                 <a class="link link-hover">About us</a>
                 <a class="link link-hover">Contact</a>
