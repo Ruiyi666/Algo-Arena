@@ -1,5 +1,5 @@
 <template>
-    <div class="w-3/4 p-4 m-8 shadow-2xl bg-base-100 card md:max-w-xl border-neutral">
+    <div class="w-3/4 max-w-xl p-4 m-8 shadow-2xl bg-base-100 card border-neutral">
         <div ref="map" :class="{
             'grid-cols-1': width === 1,
             'grid-cols-2': width === 2,
@@ -14,7 +14,7 @@
             'grid-cols-11': width === 11,
             'grid-cols-12': width === 12,
         }" class="relative grid">
-            <Tile v-for="tile in props.tiles" :color="tile.color" :speed="props.speed" />
+            <Tile v-for="tile in props.tiles" :color="tile" :speed="props.speed" />
             <slot></slot>
         </div>
     </div>

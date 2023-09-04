@@ -54,8 +54,8 @@ class GameState:
             raise ValueError("Game is not paused")
         self._paused = False
 
-    def end(self):
-        if self.ended():
+    def end(self, strict=True):
+        if self.ended() and strict:
             raise ValueError("Game is ended")
         self._ended = True
 
@@ -91,13 +91,18 @@ class GameServer:
         return len(self.players) == self.max_n_players
     
     @database_sync_to_async
-    def save_frame_action(self, player_id: int, action_dict: dict = None):
+    def save_frame_action(self, player_id: int = None, action_dict: dict = None):
         if not action_dict:
             action_dict = self.environment.action_dict(player_id)
+        print(action_dict)
         frame = action_dict.get("frame")
         action = action_dict.get("action")
-        FrameAction.objects.create(frame=frame, action=action, player_id=player_id)
-
+        if player_id:
+            FrameAction.objects.create(frame=frame, action=action, player_id=player_id)
+        else:
+            for player_id in action:
+                FrameAction.objects.create(frame=frame, action=action[player_id], player_id=player_id)
+    
     @database_sync_to_async
     def save_frame_state(self, state_dict: dict = None):
         if not state_dict:
@@ -105,6 +110,34 @@ class GameServer:
         frame = state_dict.get("frame")
         state = state_dict.get("state")
         FrameState.objects.create(frame=frame, state=state, game_id=self.game_id)
+    
+    @database_sync_to_async
+    def save_player(self, player_id):
+        try:
+            player = Player.objects.get(id=player_id)
+        except Player.DoesNotExist:
+            player = Player.objects.create(id=player_id, game_id=self.game_id, strategy=None)
+        player.score = self.environment.score(player_id)
+        player.save()
+    
+    @staticmethod
+    async def chunked_gather(coroutines, chunk_size):
+        """
+        Run the coroutines in chunks.
+        """
+        for i in range(0, len(coroutines), chunk_size):
+            await asyncio.gather(*coroutines[i:i+chunk_size])
+    
+    async def save(self):
+        print("save", len(self.players))
+        print("save", len(self.actions))
+        
+        coroutines = [self.save_frame_action(action_dict=a) for a in self.actions]
+        await self.chunked_gather(coroutines, 50)
+        coroutines = [self.save_frame_state(state_dict=s) for s in self.states]
+        await self.chunked_gather(coroutines, 50)
+        coroutines = [self.save_player(player_id=p) for p in self.players]
+        await self.chunked_gather(coroutines, 50)
     
     @database_sync_to_async
     def db_create_player(self, strategy_id):
@@ -132,15 +165,15 @@ class GameServer:
         Player.objects.get(id=player_id).delete()
     
     async def destroy_player(self, player_id):
+        print("destroy player", player_id)
         if player_id in self.players:
             if self.life.waitting():
                 await self.db_destroy_player(player_id)
                 self.players.remove(player_id)
-            elif self.life.started():
+            elif self.life.started(): 
                 self.end()
-                self.players.remove(player_id)
             elif self.life.ended():
-                self.players.remove(player_id)
+                pass
             else:
                 raise ValueError("Game started or cannot found the player_id")
             await self.broadcast_game()
@@ -157,13 +190,20 @@ class GameServer:
         while self.life.started():
             if self.life.running():
                 await asyncio.gather(
-                    self.broadcast_game_state(take_action=True),
+                    # self.broadcast_game_state(take_action=True),
+                    self.broadcast_game_action(take_action=True),
                     asyncio.sleep(1 / self.frequency),
                 )
+                if self.environment.done():
+                    self.end()
             else:
                 await asyncio.sleep(1 / self.frequency)
 
+        await self.broadcast("signal", "end")
+        
         print("------------------ end")
+        
+        await self.broadcast("signal", "close")
 
     def start(self):
         if self.life.waitting():
@@ -196,7 +236,6 @@ class GameServer:
     def collect_action(self):
         actions = self.recent_action.copy()
         self.recent_action.clear()
-        self.actions.append(actions)
         return actions
 
     @database_sync_to_async
@@ -210,13 +249,15 @@ class GameServer:
         game_state["latest_framestate"] = self.environment.state_dict()
         self.broadcast("sync.game", game_state)
     
-    async def broadcast_game_action(self):
+    async def broadcast_game_action(self, take_action=False):
         game_action = self.collect_action()
-        try:
+        if take_action:
             self.environment.step(game_action)
-        except Exception as e:
-            print(f"[ENV ERROR] {e}")
         game_action = self.environment.action_dict()
+        if len(self.actions) > 0 and self.actions[-1]['frame'] == game_action['frame']:
+            self.actions[-1] = game_action
+        else:
+            self.actions.append(game_action) # 'frame', 'action'
         await self.broadcast("sync.game.action", game_action)
 
     async def broadcast_game_state(self, take_action=False):
@@ -224,6 +265,10 @@ class GameServer:
             game_action = self.collect_action()
             self.environment.step(game_action)
         game_state = self.environment.state_dict()
+        if len(self.states) > 0 and self.states[-1]['frame'] == game_state['frame']:
+            self.states[-1] = game_state
+        else:
+            self.states.append(game_state) # 'frame', 'state'
         await self.broadcast("sync.game.state", game_state)
 
     async def broadcast(self, type, content):
@@ -250,7 +295,7 @@ class GameServerFactory(object):
 
     @classmethod
     async def destroy(cls, instance: GameServer):
-        pass
+        await instance.save()
 
 
 class GameServerRegistry(object):

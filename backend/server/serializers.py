@@ -23,9 +23,14 @@ class StrategySerializer(serializers.ModelSerializer):
 
 
 class PlayerSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
     class Meta:
         model = Player
-        fields = "__all__"
+        fields = ['username', 'game', 'strategy', 'score']
+
+    def get_username(self, obj):
+        return obj.strategy.user.username
         
 
 class FrameActionSerializer(serializers.ModelSerializer):
@@ -48,5 +53,8 @@ class GameSerializer(serializers.ModelSerializer):
         fields = ('id', 'created_at', 'updated_at', 'latest_framestate', 'metadata', 'players')
 
     def get_latest_framestate(self, obj):
-        latest_state = FrameState.objects.filter(game=obj).latest('frame')
+        try:
+            latest_state = FrameState.objects.filter(game=obj).latest('frame')
+        except FrameState.DoesNotExist:
+            return None
         return FrameStateSerializer(latest_state).data if latest_state else None

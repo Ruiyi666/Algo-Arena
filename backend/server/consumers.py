@@ -28,13 +28,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             await self._register_to_game_service()
             await self._create_player(self.strategy_id)
         except Exception as e:
-            await self.disconnect(4000) 
+            await self.close(code=400)
             raise e
         else:
             await self.send_json({
                 "type": "connect",
                 "content": {
-                    "player_id": self.player_id
+                    "player_id": self.player_id,
+                    "game_id": self.game_service.game_id
                 }
             })
 
@@ -114,5 +115,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         assert "content" in event
         assert "type" in event
         assert event["type"] == "signal"
-        
-        await self.send_json(event)
+        if event["content"] == 'close':
+            await self.close()
+        else:
+            await self.send_json(event)

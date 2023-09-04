@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute grid border rounded-full alert-error" :class="bg_colors[props.color]" :style="{
+  <div class="absolute grid border rounded-full border-base-300 alert-error" :class="bg_colors[props.color]" :style="{
     top: (props.position.y * props.size + props.padding) + 'px',
     left: (props.position.x * props.size + props.padding) + 'px',
     width: (props.size - 2 * props.padding) + 'px',
@@ -54,17 +54,17 @@ const props = defineProps({
 });
 
 const bg_colors = [
-  'bg-info',
+  'bg-info',  
   'bg-warning',
   'bg-success',
   'bg-error',
 ];
 
 const text_colors = [
-  'text-info-content',
-  'text-warning-content',
-  'text-success-content',
-  'text-error-content',
+  'text-info-content',  
+  'text-warning-content',  
+  'text-success-content',  
+  'text-error-content',  
 ]
 
 const last_direction = ref(0);

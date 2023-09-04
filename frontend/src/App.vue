@@ -16,11 +16,12 @@ import Footer from './components/Footer.vue';
 const props = defineProps({
     host: {
         type: String,
-        default: '127.0.0.1'
+        // default: '127.0.0.1',
+        default: '192.168.56.12',
     },
     port: {
         type: Number,
-        default: 8000
+        default: 8000,
     },
 })
 

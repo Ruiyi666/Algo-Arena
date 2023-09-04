@@ -13,7 +13,13 @@ Vagrant.configure("2") do |config|
     # (We have used this box previously, so reusing it here should save a
     # bit of time by using a cached copy.)
     config.vm.box = "ubuntu/focal64"
-  
+
+    # if Vagrant.has_plugin?("vagrant-proxyconf")
+    #   config.proxy.http     = "http://10.0.2.2:7890/"
+    #   config.proxy.https    = "http://10.0.2.2:7890/"
+    #   config.proxy.no_proxy = "localhost,127.0.0.1,10.0.2.2"
+    # end
+    
     config.vm.provider :docker do |docker, override|
       override.vm.box = nil
       docker.image = "dme26/vagrant-provider:ubuntu-focal"
@@ -29,6 +35,37 @@ Vagrant.configure("2") do |config|
       # docker.create_args = ["--platform=linux/arm64"]     
     end
     
+    # Here is the section for defining the database server, which I have
+    # named "dbserver".
+    config.vm.define "dbserver" do |dbserver|
+      dbserver.vm.hostname = "dbserver"
+      # Note that the IP address is different from that of the frontend
+      # above: it is important that no two VMs attempt to use the same
+      # IP address on the private_network.
+      dbserver.vm.network "private_network", ip: "192.168.56.13"
+      dbserver.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
+      
+      dbserver.vm.provision "shell", path: "build-dbserver-vm.sh"
+    end
+    
+    # Here is the section for defining the backend server, which I have
+    # named "backend".
+    config.vm.define "backend" do |backend|
+      backend.vm.hostname = "backend"
+      # This type of port forwarding has been discussed elsewhere in
+      # labs, but recall that it means that our host computer can
+      # connect to IP address 127.0.0.1 port 8080, and that network
+      # request will reach our frontend VM's port 80.
+      backend.vm.network "forwarded_port", guest: 8000, host: 8000, host_ip: "127.0.0.1"
+      # Note that the IP address is different from that of the frontend
+      # above: it is important that no two VMs attempt to use the same
+      # IP address on the private_network.
+      backend.vm.network "private_network", ip: "192.168.56.12"
+      backend.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
+
+      backend.vm.provision "shell", path: "build-backend-vm.sh"
+    end
+
     # this is a form of configuration not seen earlier in our use of
     # Vagrant: it defines a particular named VM, which is necessary when
     # your Vagrantfile will start up multiple interconnected VMs. I have
@@ -61,32 +98,6 @@ Vagrant.configure("2") do |config|
       # from this host to the VM through the shared folder mounted in
       # the VM at /vagrant
       frontend.vm.provision "shell", path: "build-frontend-vm.sh"
-    end
-    
-    # Here is the section for defining the backend server, which I have
-    # named "backend".
-    config.vm.define "backend" do |backend|
-      backend.vm.hostname = "backend"
-      # Note that the IP address is different from that of the frontend
-      # above: it is important that no two VMs attempt to use the same
-      # IP address on the private_network.
-      backend.vm.network "private_network", ip: "192.168.56.12"
-      backend.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
-
-      backend.vm.provision "shell", path: "build-backend-vm.sh"
-    end
-
-    # Here is the section for defining the database server, which I have
-    # named "dbserver".
-    config.vm.define "dbserver" do |dbserver|
-      dbserver.vm.hostname = "dbserver"
-      # Note that the IP address is different from that of the frontend
-      # above: it is important that no two VMs attempt to use the same
-      # IP address on the private_network.
-      dbserver.vm.network "private_network", ip: "192.168.56.13"
-      dbserver.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
-      
-      dbserver.vm.provision "shell", path: "build-dbserver-vm.sh"
     end
   
   end

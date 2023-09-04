@@ -74,7 +74,7 @@ class PlayerViewSet(ModelViewSet):
         return Player.objects.filter(game__id=game_id)
 
 
-class FrameActionViewSet(ReadOnlyModelViewSet):
+class FrameActionViewSet(ModelViewSet):
     serializer_class = FrameActionSerializer
 
     def get_queryset(self):
@@ -82,7 +82,7 @@ class FrameActionViewSet(ReadOnlyModelViewSet):
         return FrameAction.objects.filter(game__id=game_id)
 
 
-class FrameStateViewSet(ReadOnlyModelViewSet):
+class FrameStateViewSet(ModelViewSet):
     serializer_class = FrameStateSerializer
 
     def get_queryset(self):

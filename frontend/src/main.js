@@ -11,11 +11,11 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 /* import specific icons */
 import {
     faCircle, faArrowUp, faGamepad, faHome, faQuestion, faBars, faTrophy, faBell,
-    faEnvelope, faSun, faMoon, faUser
+    faEnvelope, faSun, faMoon, faUser, faBullseye
 } from '@fortawesome/free-solid-svg-icons';
 library.add(
     faCircle, faArrowUp, faGamepad, faHome, faQuestion, faBars, faTrophy, faBell,
-    faEnvelope, faSun, faMoon, faUser
+    faEnvelope, faSun, faMoon, faUser, faBullseye
 );
 
 

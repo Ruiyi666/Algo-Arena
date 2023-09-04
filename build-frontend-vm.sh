@@ -11,23 +11,29 @@ echo "tzdata tzdata/Areas select Pacific" | debconf-set-selections
 echo "tzdata tzdata/Zones/Europe select Auckland" | debconf-set-selections
 
 apt-get update
-apt-get install -y apache2 php libapache2-mod-php php-mysql
+sudo apt-get install -y apache2 php libapache2-mod-php php-mysql
 # install nodejs and npm to build the project
-apt-get install -y nodejs npm
-cd /vagrant/frontend
+wget https://nodejs.org/dist/v18.17.1/node-v18.17.1-linux-x64.tar.xz
+tar -xf node-v18.17.1-linux-x64.tar.xz
+sudo cp -R node-v18.17.1-linux-x64/* /usr/
+node -v
+npm -v
+cd /vagrant/
+cp -r frontend ~
+cd ~/frontend
+rm -r node_modules
 npm install
 npm run build
-
 # now copy the built files to the webserver
-cp -r /vagrant/frontend/dist/* /var/www/html/
+cp -r dist/* /var/www/html/
 
 # Change VM's webserver's configuration to use shared folder.
 # (Look inside test-website.conf for specifics.)
-cp /vagrant/test-website.conf /etc/apache2/sites-available/
+sudo cp /vagrant/website.conf /etc/apache2/sites-available/
 
 # activate our website configuration ...
-a2ensite test-website
+sudo a2ensite website
 # ... and disable the default website provided with Apache
-a2dissite 000-default
+sudo a2dissite 000-default
 # Restart the webserver, to pick up our configuration changes
-service apache2 restart
+sudo service apache2 restart

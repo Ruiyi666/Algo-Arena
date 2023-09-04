@@ -3,6 +3,7 @@
         <td class="text-center">{{ rank }}</td>
         <td>{{ username }}</td>
         <td class="text-end">{{ rating }}</td>
+        <td>{{ date }}</td>
     </tr>
 </template>
 
@@ -11,7 +12,8 @@ import { toRefs } from 'vue';
 const props = defineProps({
     rank: Number,
     username: String,
-    rating: Number
+    rating: Number,
+    date: String
 });
 const { rank, username, rating } = toRefs(props);
 

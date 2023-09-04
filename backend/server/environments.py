@@ -11,11 +11,17 @@ class GameEnvironment:
     def ready() -> bool:
         return True
     
+    def done() -> bool:
+        return False
+    
     def join(self, player_id: int):
         pass
     
     def leave(self, player_id: int):
         pass
+    
+    def score(self, player_id) -> int:
+        pass        
     
     def state_dict(self) -> dict:
         return {"frame": self.current_frame, "state": self.state}
@@ -47,10 +53,12 @@ class TerritoryTile(GameEnvironment):
         n_rows: int = 8,
         min_players: int = 2,
         max_players: int = 2,
-        max_frames: int = 3 * 60 * 10,
+        max_frames: int = 60 * 10,
         frequency: int = 10,
     ):
         super().__init__()
+        
+        self.area_statistics = {}
         
         self.action_map = {
             'up': { "x": 0, "y": -1 },
@@ -106,7 +114,7 @@ class TerritoryTile(GameEnvironment):
                 "cur_frames": 0,
                 "max_frames": max_frames,
             },
-            "map": [{"color": 0} for _ in range(n_rows * n_cols)],
+            "map": [ 0 for _ in range(n_rows * n_cols)],
             "bullets": {},
             "players": {},
         }
@@ -116,21 +124,34 @@ class TerritoryTile(GameEnvironment):
         player_state = self.candidate_player_state[cur_players].copy()
         
         self.state["players"][player_id] = player_state
-        self.state["players"][player_id]["alive"] = True
+        self.state["players"][player_id]["alive"] = 1
         self.state["players"][player_id]["color"] = cur_players
-        for id, tile in enumerate(self.state["map"]):
+        for id, _ in enumerate(self.state["map"]):
             x, y = self.index_to_vector(id)
             dist = [(abs(x - player["position"]["x"]) + abs(y - player["position"]["y"]), player['color'])
                 for player in self.state["players"].values()]
             min_dist = min(dist)
             color = random.choice([color for _, color in dist if _ == min_dist[0]])
             if color == cur_players:
-                tile['color'] = color
+                old_color = self.state["map"][id]
+                self.area_statistics[old_color] = self.area_statistics.get(old_color, 1) - 1
+                self.state["map"][id] = color
+                self.area_statistics[color] = self.area_statistics.get(color, 0) + 1
             
         
     def ready(self) -> bool:
         return len(self.state["players"]) >= self.state["settings"]["min_players"]
 
+    def done(self) -> bool:
+        return self.state["settings"]["cur_frames"] >= self.state["settings"]["max_frames"] or len(self.state["players"]) < self.state["settings"]["min_players"]
+    
+    @override
+    def score(self, player_id) -> int:
+        print(self.state["players"], player_id)
+        if player_id in self.state["players"]:
+            return self.area_statistics[self.state["players"][player_id]["color"]]
+        return 0
+    
     @override
     def state_dict(self) -> dict:
         for id, player in self.state["players"].items():
@@ -183,7 +204,7 @@ class TerritoryTile(GameEnvironment):
 
         
         # Remove dead players
-        self.state['players'] = {player_id: player for player_id, player in self.state['players'].items() if player['alive']}
+        self.state['players'] = {player_id: player for player_id, player in self.state['players'].items() if player['alive'] > 0}
 
         # Remove bullets out of the map
         self.state["bullets"] = {bullet_id: bullet for bullet_id, bullet in self.state['bullets'].items() if bullet['alive']}
@@ -213,7 +234,7 @@ class TerritoryTile(GameEnvironment):
                     direction["x"] = 0
                 elif next_y < 0 or next_y >= self.state['settings']['n_cols']:
                     direction["y"] = 0
-                elif self.state["map"][next_y * self.state["settings"]["n_cols"] + next_x]["color"] != player["color"]:
+                elif self.state["map"][next_y * self.state["settings"]["n_cols"] + next_x] != player["color"]:
                     direction["x"] = 0
                     direction["y"] = 0
             elif direction['x'] != 0 or direction['y'] != 0:
@@ -252,18 +273,16 @@ class TerritoryTile(GameEnvironment):
                 if bullet['color'] != player['color'] and \
                     bullet['position']['x'] == player['position']['x'] and \
                     bullet['position']['y'] == player['position']['y']:
-                    player['alive'] = False
+                    player['alive'] -= 1
                     bullet['alive'] = False
-                    break
                 
-                if bullet['color'] != player['color'] and \
+                elif bullet['color'] != player['color'] and \
                     bullet['position']['x'] == player['next_position']['x'] and \
                     bullet['position']['y'] == player['next_position']['y'] and \
                     bullet['next_position']['x'] == player['position']['x'] and \
                     bullet['next_position']['y'] == player['position']['y']:
-                    player['alive'] = False
+                    player['alive'] -= 1
                     bullet['alive'] = False
-                    break
         
         for bullet_id_a in self.state['bullets']:
             bullet_a = self.state['bullets'][bullet_id_a]
@@ -292,7 +311,7 @@ class TerritoryTile(GameEnvironment):
             y = bullet['position']['y']
             
             if bullet['alive']:
-                self.state['map'][y * self.state["settings"]["n_cols"] + x]["color"] = bullet['color']
+                self.state['map'][y * self.state["settings"]["n_cols"] + x] = bullet['color']
             
             if bullet['next_position']['x'] < 0 or \
                 bullet['next_position']['x'] >= self.state['settings']['n_cols'] or \

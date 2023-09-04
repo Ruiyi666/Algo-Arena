@@ -26,7 +26,8 @@ SECRET_KEY = "django-insecure-y&*^47k7vdd2l6oi2y717dmwb3z!vbn!!m2#wnpgci5x^t8g%l
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1'
+    # 'localhost', '127.0.0.1'
+    '*',
 ]
 
 # Only for development!
@@ -90,10 +91,21 @@ ASGI_APPLICATION = "backend.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR.parent / "database" / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'algo_arena_db',
+        'USER': 'algo_arena_db_user',
+        'PASSWORD': 'algo_arena_db_password',
+        'HOST': '192.168.56.13',   # Your MySQL VM's IP address
+        'PORT': '3306',
     }
 }
 

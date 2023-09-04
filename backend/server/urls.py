@@ -6,6 +6,7 @@ from .views import (
     GameViewSet,
     PlayerViewSet,
     FrameActionViewSet,
+    FrameStateViewSet
 )
 
 router = DefaultRouter()
@@ -39,4 +40,15 @@ urlpatterns = [
         ),
         name="game-action-detail",
     ),
+    path(
+        "games/<int:game_id>/states/",
+        FrameStateViewSet.as_view({"get": "list", "post": "create"}),
+    ),
+    path(
+        "games/<int:game_id>/states/<int:pk>/",
+        FrameStateViewSet.as_view(
+            {"get": "retrieve", "put": "update", "delete": "destroy"}
+        ),
+        name="game-state-detail",
+    )
 ]

@@ -8,7 +8,7 @@ chmod +x /usr/sbin/policy-rc.d
 apt-get update
       
 # We create a shell variable MYSQL_PWD that contains the MySQL root password
-export MYSQL_PWD='insecure_mysqlroot_pw'
+export MYSQL_PWD='algo_arena_db_password'
 
 # If you run the `apt-get install mysql-server` command
 # manually, it will prompt you to enter a MySQL root
@@ -29,24 +29,24 @@ service mysql start
 
 # Run some setup commands to get the database ready to use.
 # First create a database.
-echo "CREATE DATABASE fvision;" | mysql
+echo "CREATE DATABASE algo_arena_db;" | mysql
 
-# Then create a database user "webuser" with the given password.
-echo "CREATE USER 'webuser'@'%' IDENTIFIED BY 'insecure_db_pw';" | mysql
+# Then create a database user "algo_arena_db_user" with the given password.
+echo "CREATE USER 'algo_arena_db_user'@'%' IDENTIFIED BY 'algo_arena_db_password';" | mysql
 
-# Grant all permissions to the database user "webuser" regarding
-# the "fvision" database that we just created, above.
-echo "GRANT ALL PRIVILEGES ON fvision.* TO 'webuser'@'%'" | mysql
+# Grant all permissions to the database user "algo_arena_db_user" regarding
+# the "algo_arena_db" database that we just created, above.
+echo "GRANT ALL PRIVILEGES ON algo_arena_db.* TO 'algo_arena_db_user'@'%'" | mysql
 
 # Set the MYSQL_PWD shell variable that the mysql command will
 # try to use as the database password ...
-export MYSQL_PWD='insecure_db_pw'
+export MYSQL_PWD='algo_arena_db_password'
 
 # ... and run all of the SQL within the setup-database.sql file,
 # which is part of the repository containing this Vagrantfile, so you
 # can look at the file on your host. The mysql command specifies both
-# the user to connect as (webuser) and the database to use (fvision).
-cat /vagrant/setup-database.sql | mysql -u webuser fvision
+# the user to connect as (algo_arena_db_user) and the database to use (algo_arena_db).
+# cat /vagrant/setup-database.sql | mysql -u algo_arena_db_user algo_arena_db
 
 # By default, MySQL only listens for local network requests,
 # i.e., that originate from within the dbserver VM. We need to

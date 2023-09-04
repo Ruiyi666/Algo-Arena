@@ -64,16 +64,7 @@
             </div>
         </div>
     </div>
-    <dialog ref="dialog" class="modal modal-bottom sm:modal-middle">
-        <form method="dialog" class="modal-box">
-            <h3 class="text-lg font-bold">{{ dialog_title }}</h3>
-            <p class="py-4">{{ dialog_content }}</p>
-            <div class="modal-action">
-                <!-- if there is a button in form, it will close the modal -->
-                <button class="btn">Close</button>
-            </div>
-        </form>
-    </dialog>
+    <Dialog ref="dialog" />
 </template>
 
 
@@ -82,8 +73,10 @@
 import { ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+
 import axios from 'axios'
 
+import Dialog from './Dialog.vue'
 
 const props = defineProps({
     host: {
@@ -98,8 +91,6 @@ const props = defineProps({
 const store = useStore();
 const router = useRouter();
 const dialog = ref(null)
-const dialog_title = ref(null)
-const dialog_content = ref(null)
 
 const login = ref({
     username: '',
@@ -130,23 +121,20 @@ const handleLogin = async (event) => {
         })
 
         if (response.data && response.data.token) {
-            dialog_content.value = 'Logged in successfully'
-            dialog_title.value = 'Success'
-            dialog.value.showModal()
+            dialog.value.showModal(
+                'Success',
+                'Logged in successfully',
+            )
             store.commit('login', response.data.token)
             router.push({ name: 'game' })
         } else {
             localStorage.removeItem('token')
             console.error('Failed to retrieve token')
-            dialog_content.value = 'Failed to retrieve token'
-            dialog_title.value = 'Failed'
-            dialog.value.showModal()
+            dialog.value.showModal('Failed', 'Failed to retrieve token')
         }
     } catch (error) {
         console.error('Login error:', error)
-        dialog_content.value = error
-        dialog_title.value = 'Failed'
-        dialog.value.showModal()
+        dialog.value.showModal('Failed', error)
     }
 }
 
@@ -163,21 +151,15 @@ const handleRegister = async (event) => {
             console.log('User registered successfully')
             login.value.username = register.value.username
             login.value.password = register.value.password
-            dialog_content.value = 'Registered successfully'
-            dialog_title.value = 'Success'
-            dialog.value.showModal()
+            dialog.value.showModal('Success', 'Registered successfully')
             showLogin.value = true
         } else {
             console.error('Failed to register')
-            dialog_title.value = 'Failed'
-            dialog_content.value = response.data
-            dialog.value.showModal()
+            dialog.value.showModal('Failed', response.data)
         }
     } catch (error) {
         console.error('Registration error:', error)
-        dialog_title.value = 'Failed'
-        dialog_content.value = error
-        dialog.value.showModal()
+        dialog.value.showModal('Failed', error)
     }
 }
 
