@@ -15,12 +15,17 @@ apt-get update
 apt-get install -y python3 python3-pip
 apt-get install -y pkg-config libmysqlclient-dev
 cd /vagrant/
+ls
+pwd
 cp -r backend ~
+ls
+pwd
 cd ~/backend
+ls
+pwd
 # install python dependencies
 pip install pyOpenSSL --upgrade
 # pip install -v --progress-bar on -r requirements.txt
-export PATH=$PATH:/home/vagrant/.local/bin
 pip install -r requirements.txt
 python3 manage.py makemigrations
 python3 manage.py migrate

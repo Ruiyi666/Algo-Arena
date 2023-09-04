@@ -8,15 +8,15 @@
           <h2 class="mb-2 text-3xl">Get Started</h2>
           <div class="p-4 rounded bg-base-200">
             <code>
-          git clone https://github.com/Ruiyi666/COSC349.git
-          <br>
-          cd COSC349
-          <br>
-          vagrant up
-                      </code>
+            git clone https://github.com/Ruiyi666/COSC349.git
+            <br>
+            cd COSC349
+            <br>
+            vagrant up
+                        </code>
           </div>
-          <p>Navigate to <a href="http://192.168.56.11:80/" class="link link-primary">http://192.168.56.11:80/</a> or <a
-              href="http://localhost:8080/" class="link link-primary">http://localhost:8080/</a></p>
+          <p>Navigate to frontend <a href="http://localhost:8080/" class="link link-primary">http://localhost:8080/</a>, backend <a href="http://localhost:8000/" class="link link-primary">http://localhost:8000/</a>
+          </p>
         </div>
       </div>
 
@@ -65,17 +65,17 @@
           <h3 class="mt-4 mb-2 text-2xl">Run</h3>
           <div class="p-4 rounded bg-base-200">
             <code>
-          git clone https://github.com/ruiyi666/COSC349.git
-          cd COSC349
-          vagrant up
-                      </code>
+            git clone https://github.com/ruiyi666/COSC349.git
+            cd COSC349
+            vagrant up
+                        </code>
           </div>
 
           <h3 class="mt-4 mb-2 text-2xl">Cleanup</h3>
           <div class="p-4 rounded bg-base-200">
             <code>
-          vagrant destroy
-                      </code>
+            vagrant destroy
+                        </code>
           </div>
         </div>
       </div>
