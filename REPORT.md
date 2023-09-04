@@ -1,4 +1,4 @@
-# Report
+# COSC349 assignment 1 report
 
 **Algo Arena** operates on three core virtual machines, each serving a distinct role:
 
