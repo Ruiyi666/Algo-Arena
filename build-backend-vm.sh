@@ -13,7 +13,7 @@ echo "tzdata tzdata/Zones/Europe select Auckland" | debconf-set-selections
 apt-get update
 # install python and pip
 apt-get install -y python3 python3-pip
-apt-get install -y pkg-config libmysqlclient-dev
+apt-get install -y pkg-config libmysqlclient-dev coreutils
 cd /vagrant/
 ls
 pwd
@@ -33,4 +33,4 @@ python3 manage.py loaddata /vagrant/database/data.json
 # start the backend server by running the following command
 # export DJANGO_SETTINGS_MODULE=backend.settings
 # daphne backend.asgi:application
-python3 manage.py runserver 0.0.0.0:8000 &
+nohup python3 manage.py runserver 0.0.0.0:8000 &

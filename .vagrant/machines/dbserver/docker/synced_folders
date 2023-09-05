@@ -1,1 +1,0 @@
-{"docker":{"/vagrant":{"owner":"vagrant","group":"vagrant","mount_options":["dmode=775,fmode=777"],"guestpath":"/vagrant","hostpath":"/Volumes/2TB/cry/COSC349/Assignment/Github","disabled":false,"__vagrantfile":true}}}
