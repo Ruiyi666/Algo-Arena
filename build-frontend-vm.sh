@@ -11,11 +11,14 @@ echo "tzdata tzdata/Areas select Pacific" | debconf-set-selections
 echo "tzdata tzdata/Zones/Europe select Auckland" | debconf-set-selections
 
 apt-get update
-sudo apt-get install -y apache2 php libapache2-mod-php php-mysql
+apt-get install -y apt-utils
+apt-get install -y apache2
 # install nodejs and npm to build the project
-wget https://nodejs.org/dist/v18.17.1/node-v18.17.1-linux-x64.tar.xz
-tar -xf node-v18.17.1-linux-x64.tar.xz
-sudo cp -R node-v18.17.1-linux-x64/* /usr/
+# wget https://nodejs.org/dist/v18.17.1/node-v18.17.1-linux-x64.tar.xz
+# tar -xf node-v18.17.1-linux-x64.tar.xz
+# sudo cp -R node-v18.17.1-linux-x64/* /usr/
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+apt-get install -y nodejs
 node -v
 npm -v
 cd /vagrant/

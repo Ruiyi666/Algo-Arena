@@ -12,6 +12,7 @@ echo "tzdata tzdata/Zones/Europe select Auckland" | debconf-set-selections
 
 apt-get update
 # install python and pip
+apt-get install -y apt-utils
 apt-get install -y python3 python3-pip
 apt-get install -y pkg-config libmysqlclient-dev coreutils
 cd /vagrant/

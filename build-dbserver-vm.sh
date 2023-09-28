@@ -6,6 +6,7 @@ chmod +x /usr/sbin/policy-rc.d
 
 # Update Ubuntu software packages.
 apt-get update
+apt-get install -y apt-utils
       
 # We create a shell variable MYSQL_PWD that contains the MySQL root password
 export MYSQL_PWD='algo_arena_db_password'
