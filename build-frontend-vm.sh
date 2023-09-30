@@ -21,9 +21,12 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
 npm -v
-cd /vagrant/
-cp -r frontend ~
+# if not exist frontend folder, copy it
+if [ ! -d "~/frontend" ]; then
+    cp -r /vagrant/frontend ~
+fi
 cd ~/frontend
+
 rm -r node_modules
 npm install
 npm run build

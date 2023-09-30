@@ -23,11 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-y&*^47k7vdd2l6oi2y717dmwb3z!vbn!!m2#wnpgci5x^t8g%l"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # 'localhost', '127.0.0.1'
-    "*",
+    '*',
 ]
 
 # Only for development!
@@ -42,13 +42,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
+    'corsheaders',
     "channels",
     "server",
     "rest_framework",
@@ -63,7 +64,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -98,13 +99,13 @@ ASGI_APPLICATION = "backend.asgi.application"
 # }
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "algo_arena_db",
-        "USER": "algo_arena_db_user",
-        "PASSWORD": "algo_arena_db_password",
-        "HOST": "192.168.56.13",  # Your MySQL VM's IP address
-        "PORT": "3306",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'algo_arena_db',
+        'USER': 'algo_arena_db_user',
+        'PASSWORD': 'algo_arena_db_password',
+        'HOST': '192.168.56.13',   # Your MySQL VM's IP address
+        'PORT': '3306',
     }
 }
 

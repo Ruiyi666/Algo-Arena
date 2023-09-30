@@ -15,23 +15,38 @@ apt-get update
 apt-get install -y apt-utils
 apt-get install -y python3 python3-pip
 apt-get install -y pkg-config libmysqlclient-dev coreutils
-cd /vagrant/
-ls
-pwd
-cp -r backend ~
-ls
-pwd
+# install supervisor
+apt-get install -y supervisor
+if [ ! -d "~/backend" ]; then
+    cp -r /vagrant/backend ~
+fi
 cd ~/backend
-ls
-pwd
 # install python dependencies
-pip install pyOpenSSL --upgrade
+# pip install pyOpenSSL --upgrade
+pip install -i https://mirrors.aliyun.com/pypi/simple pyOpenSSL --upgrade
 # pip install -v --progress-bar on -r requirements.txt
-pip install -r requirements.txt
+pip install -i https://mirrors.aliyun.com/pypi/simple -r requirements.txt
 python3 manage.py makemigrations
 python3 manage.py migrate
 python3 manage.py loaddata /vagrant/database/data.json
 # start the backend server by running the following command
-# export DJANGO_SETTINGS_MODULE=backend.settings
-# daphne backend.asgi:application
-nohup python3 manage.py runserver 0.0.0.0:8000 &
+touch /var/log/daphne.log
+nohup daphne -b 0.0.0.0 -p 8000 backend.asgi:application &> /var/log/daphne.log &
+
+
+# create supervisor configuration for daphne
+# echo "[program:myapp]
+# command=/usr/local/bin/daphne -u /tmp/daphne.sock backend.asgi:application
+# directory=$(pwd)
+# user=$(whoami)
+# autostart=true
+# autorestart=true
+# redirect_stderr=true" > /etc/supervisor/conf.d/myapp.conf
+
+# # update supervisor configuration and start the application
+# supervisorctl reread
+# supervisorctl update
+# supervisorctl start myapp
+
+echo "success"
+
