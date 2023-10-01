@@ -127,7 +127,7 @@ resource "aws_db_instance" "dbserver" {
 resource "aws_instance" "backend" {
   ami           = "ami-010e83f579f15bba0"
   instance_type = "t2.micro"
-  key_name      = "cosc349-2023"
+  key_name      = "algo-arena"
 
   vpc_security_group_ids = [
     aws_security_group.allow_ssh.id,
@@ -137,7 +137,7 @@ resource "aws_instance" "backend" {
   connection {
     type        = "ssh"
     user        = "ubuntu" 
-    private_key = file("cosc349-2023.pem") 
+    private_key = file("algo-arena.pem") 
     host        = self.public_ip  
   }
 
@@ -181,7 +181,7 @@ resource "aws_instance" "frontend" {
 
   ami           = "ami-010e83f579f15bba0"
   instance_type = "t2.micro"
-  key_name      = "cosc349-2023"
+  key_name      = "algo-arena"
 
   vpc_security_group_ids = [
     aws_security_group.allow_ssh.id,
@@ -191,7 +191,7 @@ resource "aws_instance" "frontend" {
   connection {
     type        = "ssh"
     user        = "ubuntu" 
-    private_key = file("cosc349-2023.pem") 
+    private_key = file("algo-arena.pem") 
     host        = self.public_ip  
   }
 
@@ -199,6 +199,10 @@ resource "aws_instance" "frontend" {
     inline = [
       "mkdir ~/frontend",
     ]
+  }
+
+  provisioner "local-exec" {
+    command = "rm -rf frontend/dist; rm -rf frontend/node_modules"
   }
 
   provisioner "file" {
@@ -228,21 +232,35 @@ resource "aws_s3_bucket" "frontend_bucket" {
   bucket = var.frontend_bucket
 }
 
-resource "aws_s3_bucket_cors_configuration" "frontend_bucket" {
-  bucket = aws_s3_bucket.frontend_bucket.id  
-  cors_rule {
-    allowed_headers = ["*"]
-    allowed_methods = ["GET", "HEAD"]
-    allowed_origins = ["*"]
-    expose_headers  = ["ETag"]
-    max_age_seconds = 3000
-  }  
+resource "aws_s3_bucket_website_configuration" "frontend" {
+  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  bucket = aws_s3_bucket.frontend_bucket.bucket
+
+  index_document {
+    suffix = "index.html"
+  }
 }
 
-resource "aws_s3_bucket_acl" "frontend_bucket" {
-    bucket = aws_s3_bucket.frontend_bucket.id
-    acl    = "public-read"
-    depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+  policy = <<POLICY
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "PublicReadGetObject",
+          "Effect": "Allow",
+          "Principal": "*",
+          "Action": [
+            "s3:GetObject"
+          ],
+          "Resource": [
+            "arn:aws:s3:::${aws_s3_bucket.frontend_bucket.bucket}/*"
+          ]
+        }
+      ]
+    }
+  POLICY
 }
 
 resource "null_resource" "local_build" {

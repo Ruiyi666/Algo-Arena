@@ -36,10 +36,11 @@ Navigate to
 
 ### Requirements
 
-- **VirtualBox** 7.0.x: https://www.virtualbox.org/wiki/Download_Old_Builds_7_0
-
 - **Vagrant** v2.3.7: https://www.vagrantup.com/
----
+
+Choose one of the following virtualization providers:
+- **VirtualBox** 7.0.x: https://www.virtualbox.org/wiki/Download_Old_Builds_7_0
+- **Docker** v20.10.x: https://docs.docker.com/get-docker/
 
 ### Run
 
@@ -53,9 +54,12 @@ After installing the necessary requirements:
 
 **Start the Virtual Machines**: 
 ```bash
-vagrant up
+vagrant up --provider virtualbox
+# or
+vagrant up --provider docker
 ```
-   Use the above command to initiate and set up the virtual machines as per the configuration in the Vagrantfile. This command will set up the three core servers: frontend, backend, and database.
+
+Use the above command to initiate and set up the virtual machines as per the configuration in the Vagrantfile. This command will set up the three core servers: frontend, backend, and database.
 
 **Access the Web Interface**: 
    Once the setup completes, open your browser and navigate to `http://192.168.56.11:80/` or `http://localhost:8080/` to access the Algo Arena interface.
@@ -72,24 +76,48 @@ This command stops all running virtual machines associated with the project and 
 
 ## Deploy
 
-install terraform
+Here are the steps to deploy the application on AWS.
 
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update && sudo apt install terraform
+### Requirements
 
-install awscli
+- **Terraform** v1.5.7: https://developer.hashicorp.com/terraform/downloads
+- **AWS CLI** v2: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+- **(Optional) node.js** v18.17.0: https://nodejs.org/en/download/
 
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
+### Run
 
+**Configure** AWS CLI with your credentials. Access key ID and secret access key can be obtained from AWS IAM.
 
+```bash
+# Configure AWS CLI, 
+# Edit ~/.aws/credentials
+aws configure
+```
 
-~/.aws/credentials
+**Authenticate**, remember to generate a new SSH key pair named `algo-arena.pem` and place it in the project directory.
+
+**Initialize** Terraform for the project.
 
 ```bash
 terraform init
-terraform init -upgrade
+```
+
+Here we use EC2 as the deployment method. 
+
+```bash
 terraform apply
+```
+
+If you want to deploy the application frontend to S3, you need to install node.js and run the following command.
+
+```bash
+terraform apply -var="frontend_deployment_method=s3"
+```
+
+### Cleanup
+
+To destroy all resources created by Terraform, run:
+
+```bash
+terraform destroy
 ```
