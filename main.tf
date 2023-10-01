@@ -229,12 +229,56 @@ resource "aws_instance" "frontend" {
 }
 
 resource "aws_s3_bucket" "frontend_bucket" {
+  count = var.frontend_deployment_method == "ec2" ? 0 : 1
   bucket = var.frontend_bucket
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
+  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  bucket = aws_s3_bucket.frontend_bucket[0].bucket
+
+  block_public_acls   = false
+  block_public_policy = false
+  ignore_public_acls  = false
+  restrict_public_buckets = false
+}
+
+
+resource "null_resource" "local_build" {
+  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      cd frontend
+      npm install
+      rm .env
+      echo 'VITE_APP_BACKEND_HOST=${aws_instance.backend.public_ip}' >> .env
+      npm run build
+      aws s3 sync dist/ s3://${aws_s3_bucket.frontend_bucket[0].bucket}/
+    EOT
+  }
+}
+
+# output "frontend_server_ip" {
+#   value = var.frontend_deployment_method == "ec2" ? aws_instance.frontend[0].public_ip : "N/A"
+# }
+
+output "backend_server_ip" {
+  value = aws_instance.backend.public_ip
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend" {
   count = var.frontend_deployment_method == "ec2" ? 0 : 1
-  bucket = aws_s3_bucket.frontend_bucket.bucket
+  depends_on = [ 
+    null_resource.local_build,
+    aws_s3_bucket.frontend_bucket,
+    aws_s3_bucket_public_access_block.frontend_bucket
+  ]
+  bucket = aws_s3_bucket.frontend_bucket[0].bucket
 
   index_document {
     suffix = "index.html"
@@ -242,7 +286,13 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
 }
 
 resource "aws_s3_bucket_policy" "frontend" {
-  bucket = aws_s3_bucket.frontend_bucket.id
+  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  depends_on = [ 
+    null_resource.local_build,
+    aws_s3_bucket.frontend_bucket,
+    aws_s3_bucket_public_access_block.frontend_bucket
+  ]
+  bucket = aws_s3_bucket.frontend_bucket[0].bucket
   policy = <<POLICY
     {
       "Version": "2012-10-17",
@@ -255,7 +305,7 @@ resource "aws_s3_bucket_policy" "frontend" {
             "s3:GetObject"
           ],
           "Resource": [
-            "arn:aws:s3:::${aws_s3_bucket.frontend_bucket.bucket}/*"
+            "arn:aws:s3:::${aws_s3_bucket.frontend_bucket[0].bucket}/*"
           ]
         }
       ]
@@ -263,30 +313,6 @@ resource "aws_s3_bucket_policy" "frontend" {
   POLICY
 }
 
-resource "null_resource" "local_build" {
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      cd frontend
-      npm install
-      rm .env
-      echo 'VITE_APP_BACKEND_HOST=${aws_instance.backend.public_ip}' >> .env
-      npm run build
-      aws s3 sync dist/ s3://${aws_s3_bucket.frontend_bucket.bucket}/
-    EOT
-  }
+output "frontend_url" {
+  value = var.frontend_deployment_method == "ec2" ? "http://${aws_instance.frontend[0].public_ip}" : "http://${aws_s3_bucket.frontend_bucket[0].bucket}.s3-website-us-east-1.amazonaws.com"
 }
-
-
-output "frontend_server_ip" {
-  value = var.frontend_deployment_method == "ec2" ? aws_instance.frontend[0].public_ip : aws_s3_bucket_website_configuration.frontend[0].website_endpoint
-}
-
-
-output "backend_server_ip" {
-  value = aws_instance.backend.public_ip
-}
-
