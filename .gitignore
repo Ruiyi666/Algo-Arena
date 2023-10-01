@@ -160,4 +160,9 @@ cython_debug/
 .idea/
 .vscode/
 .vagrant/
+.terraform/
 
+*.tfstate
+*.tfstate.backup
+*.pem
+.terraform.*
