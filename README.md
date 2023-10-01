@@ -22,7 +22,7 @@ Navigate to
 2. Game Rooms - After logging in, players can enter a room using a room number, allowing them to engage in gameplay with other members of the same room.
 3. Future Prospects - In the pipeline is an exciting feature where users will have the ability to submit strategy codes. This will allow their in-game avatars or agents to move according to the predefined logic, making gameplay even more dynamic and strategy-driven.
 
-![](page.png)
+![](docs/page.png)
 
 ---
 
@@ -83,3 +83,13 @@ install awscli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
+
+
+
+~/.aws/credentials
+
+```bash
+terraform init
+terraform init -upgrade
+terraform apply
+```

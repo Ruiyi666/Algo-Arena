@@ -15,6 +15,6 @@ const props = defineProps({
 
 <template>
   <main class="bg-base-200">
-    <Login :host="host" :port="port" />
+    <Login :host="props.host" :port="props.port" />
   </main>
 </template>

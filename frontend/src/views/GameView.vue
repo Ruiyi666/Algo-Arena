@@ -28,6 +28,6 @@ onMounted(() => {
 
 <template>
   <main class="bg-base-200">
-    <PlayGame :host="host" :port="port"/>
+    <PlayGame :host="props.host" :port="props.port"/>
   </main>
 </template>

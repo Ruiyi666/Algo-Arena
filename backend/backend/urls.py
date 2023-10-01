@@ -15,8 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
-from django.contrib.staticfiles.views import serve
+from django.urls import path, include
 
 from rest_framework.documentation import include_docs_urls
 
@@ -41,14 +40,10 @@ class APITokenAuthView(ObtainAuthToken):
         except Token.DoesNotExist:
             return Response({"detail": "Token not found."}, status=status.HTTP_404_NOT_FOUND)
 
-def return_static(request, path, insecure=True, **kwargs):
-    return serve(request, path, insecure, **kwargs)
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-token-auth/", APITokenAuthView.as_view()),
     path("api-auth/", include("rest_framework.urls")),
     path("api/", include("server.urls")),
     path("docs/", include_docs_urls(title="Backend API")),
-    re_path(r'^static/(?P<path>.*)$', return_static, name='static'), 
 ]

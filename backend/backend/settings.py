@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -64,7 +66,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -98,16 +100,37 @@ ASGI_APPLICATION = "backend.asgi.application"
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'algo_arena_db',
-        'USER': 'algo_arena_db_user',
-        'PASSWORD': 'algo_arena_db_password',
-        'HOST': '192.168.56.13',   # Your MySQL VM's IP address
-        'PORT': '3306',
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'algo_arena_db',
+#         'USER': 'algo_arena_db_user',
+#         'PASSWORD': 'algo_arena_db_password',
+#         'HOST': '192.168.56.13',   # Your MySQL VM's IP address
+#         'PORT': '3306',
+#     }
+# }
+
+if config('DB_ENGINE', default='mysql') == 'sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR.parent / "database" / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config('DB_NAME', default='default_db_name'),
+            'USER': config('DB_USER', default='default_user'),
+            'PASSWORD': config('DB_PASSWORD', default='default_password'),
+            'HOST': config('DB_HOST', default='localhost'), 
+            'PORT': config('DB_PORT', default='3306'),
+        }
+    }
+
+print(DATABASES)
 
 
 # Password validation

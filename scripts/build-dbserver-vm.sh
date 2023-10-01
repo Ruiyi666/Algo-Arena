@@ -1,5 +1,14 @@
 #!/bin/bash
 
+while getopts ":n:u:p:" opt; do
+  case $opt in
+    n) DB_NAME="$OPTARG" ;;
+    u) DB_USER="$OPTARG" ;;
+    p) DB_PASSWORD="$OPTARG" ;;
+    \?) echo "Invalid option -$OPTARG" >&2 ;;
+  esac
+done
+
 # allow services to run
 echo exit 0 > /usr/sbin/policy-rc.d
 chmod +x /usr/sbin/policy-rc.d
@@ -9,7 +18,7 @@ apt-get update
 apt-get install -y apt-utils
       
 # We create a shell variable MYSQL_PWD that contains the MySQL root password
-export MYSQL_PWD='algo_arena_db_password'
+export MYSQL_PWD=$DB_PASSWORD
 
 # If you run the `apt-get install mysql-server` command
 # manually, it will prompt you to enter a MySQL root
@@ -18,8 +27,8 @@ export MYSQL_PWD='algo_arena_db_password'
 # so our automated provisioning script does not get stopped by
 # the software package management system attempting to ask the
 # user for configuration information.
-echo "mysql-server mysql-server/root_password password $MYSQL_PWD" | debconf-set-selections 
-echo "mysql-server mysql-server/root_password_again password $MYSQL_PWD" | debconf-set-selections
+echo "mysql-server mysql-server/root_password password $DB_PASSWORD" | debconf-set-selections 
+echo "mysql-server mysql-server/root_password_again password $DB_PASSWORD" | debconf-set-selections
 
 # Install the MySQL database server.
 apt-get -y install mysql-server
@@ -30,18 +39,17 @@ service mysql start
 
 # Run some setup commands to get the database ready to use.
 # First create a database.
-echo "CREATE DATABASE algo_arena_db;" | mysql
+# echo "CREATE DATABASE algo_arena_db;" | mysql
+echo "CREATE DATABASE $DB_NAME;" | mysql
 
 # Then create a database user "algo_arena_db_user" with the given password.
-echo "CREATE USER 'algo_arena_db_user'@'%' IDENTIFIED BY 'algo_arena_db_password';" | mysql
+# echo "CREATE USER 'algo_arena_db_user'@'%' IDENTIFIED BY 'algo_arena_db_password';" | mysql
+echo "CREATE USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';" | mysql
 
 # Grant all permissions to the database user "algo_arena_db_user" regarding
 # the "algo_arena_db" database that we just created, above.
-echo "GRANT ALL PRIVILEGES ON algo_arena_db.* TO 'algo_arena_db_user'@'%'" | mysql
-
-# Set the MYSQL_PWD shell variable that the mysql command will
-# try to use as the database password ...
-export MYSQL_PWD='algo_arena_db_password'
+# echo "GRANT ALL PRIVILEGES ON algo_arena_db.* TO 'algo_arena_db_user'@'%'" | mysql
+echo "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%'" | mysql
 
 # ... and run all of the SQL within the setup-database.sql file,
 # which is part of the repository containing this Vagrantfile, so you

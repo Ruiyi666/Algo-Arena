@@ -13,18 +13,8 @@ import { RouterView } from 'vue-router'
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
 
-const props = defineProps({
-    host: {
-        type: String,
-        default: '127.0.0.1',
-        // default: '192.168.56.12',
-    },
-    port: {
-        type: Number,
-        default: 8000,
-    },
-})
-
+const host = import.meta.env.VITE_APP_BACKEND_HOST || '127.0.0.1'
+const port = Number(import.meta.env.VITE_APP_BACKEND_PORT) || 8000
 
 </script>
 

@@ -1,6 +1,15 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Define arguments here
+db_name = "algo_arena_db"
+db_user = "algo_arena_db_user"
+db_pass = "algo_arena_db_password"
+
+db_host = "192.168.56.13"
+bk_host = "192.168.56.12"
+ft_host = "192.168.56.11"
+
 # A Vagrantfile to set up two VMs, a frontend and a database server,
 # connected together using an internal network with manually-assigned
 # IP addresses for the VMs.
@@ -30,7 +39,7 @@ Vagrant.configure("2") do |config|
       docker.create_args = ["--cgroupns=host"]
       # The create_args can be augmented to set the container's hostname
       # Note that the actual following example has not been tested.
-      #docker.create_args = ["--cgroupns=host","-h somehostname.localdomain"]
+      # docker.create_args = ["--cgroupns=host","-h somehostname.localdomain"]
       # Uncomment to force arm64 for testing images on Intel
       # docker.create_args = ["--platform=linux/arm64"]     
     end
@@ -42,10 +51,17 @@ Vagrant.configure("2") do |config|
       # Note that the IP address is different from that of the frontend
       # above: it is important that no two VMs attempt to use the same
       # IP address on the private_network.
-      dbserver.vm.network "private_network", ip: "192.168.56.13"
+      dbserver.vm.network "private_network", ip: db_host
       dbserver.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
       
-      dbserver.vm.provision "shell", path: "build-dbserver-vm.sh"
+      dbserver.vm.provision "shell" do |s|
+        s.path = "scripts/build-dbserver-vm.sh"
+        s.args = [
+          "-n", db_name,
+          "-u", db_user,
+          "-p", db_pass,
+        ]
+      end
     end
     
     # Here is the section for defining the backend server, which I have
@@ -60,10 +76,18 @@ Vagrant.configure("2") do |config|
       # Note that the IP address is different from that of the frontend
       # above: it is important that no two VMs attempt to use the same
       # IP address on the private_network.
-      backend.vm.network "private_network", ip: "192.168.56.12"
+      backend.vm.network "private_network", ip: bk_host
       backend.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
 
-      backend.vm.provision "shell", path: "build-backend-vm.sh"
+      backend.vm.provision "shell" do |s|
+        s.path = "scripts/build-backend-vm.sh"
+        s.args = [
+          "-n", db_name,
+          "-u", db_user,
+          "-p", db_pass,
+          "-h", db_host,
+        ]
+      end
     end
 
     # this is a form of configuration not seen earlier in our use of
@@ -87,7 +111,7 @@ Vagrant.configure("2") do |config|
       # too. There are restrictions on what IP addresses will work, but
       # a form such as 192.168.2.x for x being 11, 12 and 13 (three VMs)
       # is likely to work.
-      frontend.vm.network "private_network", ip: "192.168.56.11"
+      frontend.vm.network "private_network", ip: ft_host
   
       # This following line is only necessary in the CS Labs... but that
       # may well be where markers mark your assignment.
@@ -97,9 +121,13 @@ Vagrant.configure("2") do |config|
       # the frontend VM. Note that the file test-website.conf is copied
       # from this host to the VM through the shared folder mounted in
       # the VM at /vagrant
-      frontend.vm.provision "shell", path: "build-frontend-vm.sh"
+      frontend.vm.provision "shell" do |s|
+        s.path = "scripts/build-frontend-vm.sh"
+        s.args = [
+          "-h", "127.0.0.1"
+        ]
+      end
     end
-  
   end
   
   #  LocalWords:  frontend xenial64
