@@ -6,7 +6,7 @@ provider "aws" {
 variable "project" {
   description = "The name of the project"
   type        = string
-  default = "algo_arena"
+  default     = "algo_arena"
 }
 
 # usage: terraform apply -var 'database_only=true'
@@ -100,28 +100,28 @@ resource "aws_security_group" "allow_mysql" {
 }
 
 resource "aws_security_group" "allow_daphne" {
-    name        = "allow_daphne"
-    description = "Allow inbound traffic on Daphne default port"
+  name        = "allow_daphne"
+  description = "Allow inbound traffic on Daphne default port"
 
-    ingress {
-      description = "Daphne"
-      from_port   = 8000
-      to_port     = 8000
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    description = "Daphne"
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-    egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_db_instance" "dbserver" {
   allocated_storage    = 20
-  db_name              = "${var.project}"
+  db_name              = var.project
   engine               = "mysql"
   engine_version       = "8.0"
   instance_class       = "db.t2.micro"
@@ -148,9 +148,9 @@ resource "aws_instance" "backend" {
 
   connection {
     type        = "ssh"
-    user        = "ubuntu" 
-    private_key = file("algo-arena.pem") 
-    host        = self.public_ip  
+    user        = "ubuntu"
+    private_key = file("algo-arena.pem")
+    host        = self.public_ip
   }
 
   provisioner "remote-exec" {
@@ -161,7 +161,7 @@ resource "aws_instance" "backend" {
   }
 
   provisioner "file" {
-    source      = "backend/" 
+    source      = "backend/"
     destination = "/home/ubuntu/backend"
   }
 
@@ -189,7 +189,7 @@ resource "aws_instance" "backend" {
 }
 
 resource "aws_instance" "frontend" {
-  count         = var.frontend_deployment_method == "ec2" && !var.database_only ? 1 : 0
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 1 : 0
 
   ami           = "ami-010e83f579f15bba0"
   instance_type = "t2.micro"
@@ -202,9 +202,9 @@ resource "aws_instance" "frontend" {
 
   connection {
     type        = "ssh"
-    user        = "ubuntu" 
-    private_key = file("algo-arena.pem") 
-    host        = self.public_ip  
+    user        = "ubuntu"
+    private_key = file("algo-arena.pem")
+    host        = self.public_ip
   }
 
   provisioner "remote-exec" {
@@ -218,7 +218,7 @@ resource "aws_instance" "frontend" {
   }
 
   provisioner "file" {
-    source      = "frontend/" 
+    source      = "frontend/"
     destination = "/home/ubuntu/frontend"
   }
 
@@ -241,18 +241,18 @@ resource "aws_instance" "frontend" {
 }
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
-  bucket = var.frontend_bucket
+  count         = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
+  bucket        = var.frontend_bucket
   force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
-  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
+  count  = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   bucket = aws_s3_bucket.frontend_bucket[0].bucket
 
-  block_public_acls   = false
-  block_public_policy = false
-  ignore_public_acls  = false
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
   restrict_public_buckets = false
 }
 
@@ -285,7 +285,7 @@ output "backend_server_ip" {
 
 resource "aws_s3_bucket_website_configuration" "frontend" {
   count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
-  depends_on = [ 
+  depends_on = [
     null_resource.local_build,
     aws_s3_bucket.frontend_bucket,
     aws_s3_bucket_public_access_block.frontend_bucket
@@ -299,7 +299,7 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
 
 resource "aws_s3_bucket_policy" "frontend" {
   count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
-  depends_on = [ 
+  depends_on = [
     null_resource.local_build,
     aws_s3_bucket.frontend_bucket,
     aws_s3_bucket_public_access_block.frontend_bucket

@@ -6,7 +6,7 @@
 
 ## Introduction
 
-In this assignment, I have deploy my project **Algo Arena** to AWS, which is a web application that requires a frontend, a backend server, and a database. You can use only one command to deploy the project to AWS, or locally (See **Deployment** for details).
+In this assignment, I have deployed my project **Algo Arena** to AWS, which is a web application that requires a frontend, a backend server, and a database. You can use only one command to deploy the project to AWS, or locally (See **Deployment** for details).
 
 ```bash
 terraform apply
@@ -158,9 +158,9 @@ If you want to deploy the frontend to S3 (See the section below), you need to in
 
 #### Illustration
 
-The reason why we provide two ways to deploy the project is that in the first way, we only need to install **Terraform** and **AWS CLI** on the local machine, and all the resources will be created on AWS and built automatically. However, we don't have another non-EC2 resource as the requirement of the assignment, and the frontend of the project is a static single-page application, which is no need to be deployed on Apache or Nginx on EC2.
+The reason why we provide two ways to deploy the project is that in the first way, we only need to install **Terraform** and **AWS CLI** on the local machine, and all the resources will be created on AWS and built automatically. However, we don't have another non-EC2 resource as the requirement of the assignment, and the frontend of the project is a static single-page application, which is not need to be deployed on Apache or Nginx on EC2.
 
-So in the second way, we deploy the frontend to S3, and the backend to EC2, and the database to RDS. In this way, we can meet the requirement of the assignment, but the drawback is that we need to build the frontend locally and upload it to S3, during which we need to install **Node.js** on the local machine. 
+So in the second way, we deploy the frontend to S3, and the backend to EC2, and the database to RDS. In this way, we can meet the requirements of the assignment, but the drawback is that we need to build the frontend locally and upload it to S3, during which we need to install **Node.js** on the local machine. 
 
 Details of the second way:
 - Create an RDS instance for the database
@@ -168,20 +168,20 @@ Details of the second way:
     - db.t2.micro instance
     - 20GB storage
     
-    An address is generated for the database, where all the users info, game records are stored. The address will be used in the `.env` file in the `backend` directory.
+    An address is generated for the database, where all the users' info, game records are stored. The address will be used in the `.env` file in the `backend` directory.
 
 - Create an EC2 instance for the backend
     - Ubuntu 20.04
     - t2.micro instance
     - Daphne + Django 4
     
-    The provision script will transfer the source code to the EC2 instance and prepare the environment, which means create a `.env` file in the `backend` directory, containing the database address and credentials. 
+    The provision script will transfer the source code to the EC2 instance and prepare the environment, which means creating a `.env` file in the `backend` directory, containing the database address and credentials. 
     
     The initial database migration will be executed automatically. 
     ```bash
     python manage.py loaddata database/data.json
     ```
-    The above command that automatically executed loads the `database/data.json` file into the database. You can export the database to a json file using the following command:
+    The above command that is automatically executed loads the `database/data.json` file into the database. You can export the database to a json file using the following command:
     
     ```bash
     python manage.py dumpdata > database/data.json
@@ -196,7 +196,7 @@ Details of the second way:
 
 > Note:
 >
-> I have tried to deploy the frontend to `aws-amplify-app` or `aws-apprunner`, but I failed. The reason is that the those services are quite convenient, but they need to pull the source code from Github, this is not elegant because when I change the source code, I need to push it to Github, and then the service will pull the source code and build it. So I choose to build the frontend locally and upload it to S3.
+> I have tried to deploy the frontend to `aws-amplify-app` or `aws-apprunner`, but I failed. The reason is that those services are quite convenient, but they need to pull the source code from Github, this is not elegant because when I change the source code, I need to push it to Github, and then the service will pull the source code and build it. So I choose to build the frontend locally and upload it to S3.
 > But this is not a good solution, because what if I don't have node.js on my local machine? I think in the future I will try to use `CodeBuild` to build the frontend and upload it to S3.
 
 ## Cost
@@ -226,8 +226,8 @@ I use the [AWS calculator](https://calculator.aws/) to calculate the cost of the
 
 - **Total**: 26.45 USD per Month
 
-Some Cost that may be ignored:
-- the backend server hosted on EC2 serves a restful API, and a websocket API. Theses APIs are used to communicate with the frontend between users. Which requires a lot of data transfer. However, the data transfer (requires Elastic IP) is a little bit complicated to calculate, so I ignore it here, and the cost will not exceed 7.3 USD per Month.
+Some Costs that may be ignored:
+- the backend server hosted on EC2 serves a restful API, and a websocket API. These APIs are used to communicate with the frontend between users. Which requires a lot of data transfer. However, the data transfer (requires Elastic IP) is a little bit complicated to calculate, so I ignore it here, and the cost will not exceed 7.3 USD per Month.
 
 ### Shutdown Cost
 
@@ -241,8 +241,8 @@ The database server is running on RDS, which is a managed service, using a `db.t
 
 - 0.017 USD per Hour * 24 Hours * 30 Days + 0.115 USD per GB-month * 20 GB * 30 Days = 14.71 USD per Month
 
-> Issue: The database server is still running on EC2, which is not necessary. If stop the database server, the cost will decrease to 2.3 USD per Month since the storage is still allocated.
-> However, I haven't try it so that this situation is only a hypothesis.
+> Issue: The database server is still running on EC2, which is not necessary. If we stop the database server, the cost will decrease to 2.3 USD per Month since the storage is still allocated.
+> However, I haven't tried it so this situation is only a hypothesis.
 
 ### Destroy Cost
 
