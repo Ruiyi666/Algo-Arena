@@ -11,6 +11,7 @@ vagrant up
 ```
 
 Navigate to 
+
 - frontend: http://localhost:8080/ 
 - backend: http://localhost:8000/
 
@@ -39,6 +40,7 @@ Navigate to
 - **Vagrant** v2.3.7: https://www.vagrantup.com/
 
 Choose one of the following virtualization providers:
+
 - **VirtualBox** 7.0.x: https://www.virtualbox.org/wiki/Download_Old_Builds_7_0
 - **Docker** v20.10.x: https://docs.docker.com/get-docker/
 
@@ -53,6 +55,7 @@ After installing the necessary requirements:
    Change your current directory to the Algo Arena directory by using the command `cd COSC349`.
 
 **Start the Virtual Machines**: 
+
 ```bash
 vagrant up --provider virtualbox
 # or
@@ -121,3 +124,46 @@ To destroy all resources created by Terraform, run:
 ```bash
 terraform destroy
 ```
+
+## Future Prospects
+
+- **Game Replay**: Now, every action (or frame state) in the game is recorded in the database. And can be accessed via the backend API `/api/games/<game_id>/`. But the frontend does not support the replay of the game. In the future, we will add a replay feature to the frontend. 
+   - Next frame button
+   - Previous frame button (a little bit difficult)
+   - Play button
+   - Pause button
+   - Speed control
+   - Progress bar (as done in the game play page)
+   - Save replay (download as mp4)
+
+Possible solutions:
+   - Add a new view in `frontend/src/views/` to support the replay feature.
+   - Refer to the components in `frontend/src/components/PlayGame.vue` and implement the `frontend/src/components/ReplayGame.vue` component.
+   - Access the game replay data via the backend API `/api/games/<game_id>/`, `/api/games/<game_id>/frames`, `/api/games/<game_id>/actions`.
+
+- **Player Profile**: The button in the top right corner of the page is a placeholder for the player profile page. In the future, we will add a player profile page to the frontend. 
+   - Player state: online, offline, playing
+   - Player information
+   - Player avatar
+   - Player ranking
+   - Player game history
+   - Player strategy list
+Through the game history, players can access the replay of the game.
+
+- **Strategy Execution**: The architecture of **Algo Arena** is designed to support the execution of strategy codes. And for current implementation, each users owns a default strategy, which means they operate the avatar according to their keyboard input. In the future, users will be able to submit strategy codes.
+
+Possible solutions:
+   - Support Python first, the code can be executed directly on the backend server. But we need to consider the security issue. Store the code in the database, and load the code when the game starts.
+   - Support socket communication. Put the code in a docker container, and the container communicates with the backend server via socket. This can ensure the security of the backend server. Still, it can be easily extended to support other languages.
+
+Possible backend Solution:
+   - The game starts when the room is full.
+   - Allow 3-4 players in a room.
+   - The player who creates the room can choose the number of players, the room id, or the room id is generated automatically. Set the grid size, the game speed, and the maximum number of frames.
+   - In the `backend/server/services.py` file, the `GameServer` represents a single game, hasing a `game_timer()` that sync all the operations to players. Maybe an easy way is to create a new `StrategyServer` class, which can accept the strategy code and executes like the `GameConsumer` class. And the `GameServer` class can create a new `StrategyServer` instance for each player.
+
+Possible frontend Solution:
+   - Add a new view in `frontend/src/views/` to support upload, delete, and list strategies.
+   - Adjust the `PlayGame.vue`, take mannual operating as a strategy. Before the game starts, users can choose set the room id, set the number of players, choose a strategy for their avatar. For other users, they first enter the room id, and then choose one or more strategies for their avatar. The game starts when the room is full.
+   
+

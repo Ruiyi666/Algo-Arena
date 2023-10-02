@@ -2,18 +2,29 @@ provider "aws" {
   region = "us-east-1"
 }
 
+# usage: terraform apply -var 'project=algo_arena'
 variable "project" {
   description = "The name of the project"
   type        = string
   default = "algo_arena"
 }
 
+# usage: terraform apply -var 'database_only=true'
+variable "database_only" {
+  description = "Shut down all the uncecessary resources and only keep the database"
+  type        = bool
+  default     = false
+}
+
+# usage: terraform apply -var 'frontend_deployment_method=ec2'
+#        terraform apply -var 'frontend_deployment_method=s3'
 variable "frontend_deployment_method" {
   description = "Choose the deployment method for the frontend (ec2 or other)"
   type        = string
   default     = "ec2"
 }
 
+# usage: terraform apply -var 'frontend_bucket=algo-arena-frontend'
 variable "frontend_bucket" {
   description = "The name of the S3 bucket for the frontend"
   type        = string
@@ -109,11 +120,11 @@ resource "aws_security_group" "allow_daphne" {
 }
 
 resource "aws_db_instance" "dbserver" {
-  allocated_storage    = 10
+  allocated_storage    = 20
   db_name              = "${var.project}"
   engine               = "mysql"
   engine_version       = "8.0"
-  instance_class       = "db.t3.micro"
+  instance_class       = "db.t2.micro"
   username             = "${var.project}_user"
   password             = "${var.project}_password"
   parameter_group_name = "default.mysql8.0"
@@ -125,6 +136,7 @@ resource "aws_db_instance" "dbserver" {
 }
 
 resource "aws_instance" "backend" {
+  count         = var.database_only ? 0 : 1
   ami           = "ami-010e83f579f15bba0"
   instance_type = "t2.micro"
   key_name      = "algo-arena"
@@ -177,7 +189,7 @@ resource "aws_instance" "backend" {
 }
 
 resource "aws_instance" "frontend" {
-  count         = var.frontend_deployment_method == "ec2" ? 1 : 0
+  count         = var.frontend_deployment_method == "ec2" && !var.database_only ? 1 : 0
 
   ami           = "ami-010e83f579f15bba0"
   instance_type = "t2.micro"
@@ -219,7 +231,7 @@ resource "aws_instance" "frontend" {
     inline = [
       "cd ~",
       "chmod +x /tmp/build-frontend-vm.sh",
-      "/tmp/build-frontend-vm.sh -h ${aws_instance.backend.public_ip}"
+      "/tmp/build-frontend-vm.sh -h ${aws_instance.backend[0].public_ip}"
     ]
   }
 
@@ -229,13 +241,13 @@ resource "aws_instance" "frontend" {
 }
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   bucket = var.frontend_bucket
   force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
-  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   bucket = aws_s3_bucket.frontend_bucket[0].bucket
 
   block_public_acls   = false
@@ -246,7 +258,7 @@ resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
 
 
 resource "null_resource" "local_build" {
-  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   triggers = {
     always_run = "${timestamp()}"
   }
@@ -256,7 +268,7 @@ resource "null_resource" "local_build" {
       cd frontend
       npm install
       rm .env
-      echo 'VITE_APP_BACKEND_HOST=${aws_instance.backend.public_ip}' >> .env
+      echo 'VITE_APP_BACKEND_HOST=${aws_instance.backend[0].public_ip}' >> .env
       npm run build
       aws s3 sync dist/ s3://${aws_s3_bucket.frontend_bucket[0].bucket}/
     EOT
@@ -268,11 +280,11 @@ resource "null_resource" "local_build" {
 # }
 
 output "backend_server_ip" {
-  value = aws_instance.backend.public_ip
+  value = aws_instance.backend[0].public_ip
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend" {
-  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   depends_on = [ 
     null_resource.local_build,
     aws_s3_bucket.frontend_bucket,
@@ -286,7 +298,7 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
 }
 
 resource "aws_s3_bucket_policy" "frontend" {
-  count = var.frontend_deployment_method == "ec2" ? 0 : 1
+  count = var.frontend_deployment_method == "ec2" && !var.database_only ? 0 : 1
   depends_on = [ 
     null_resource.local_build,
     aws_s3_bucket.frontend_bucket,
