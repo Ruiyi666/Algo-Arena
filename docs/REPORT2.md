@@ -20,9 +20,9 @@ In this report, I will introduce the architecture of the project, the deployment
 
 ```mermaid
 graph LR
-    A[User] --> B[Frontend Server]
-    B --> C[Backend Server]
-    C --> D[Database Server]
+    A[User] --> B[Frontend]
+    B --> C[Backend]
+    C --> D[Database]
 ```
 
 The architecture of the project is simple, which is a three-tier architecture. The frontend server is responsible for the user interface, the backend server is responsible for the game mechanics, user interactions, and real-time data processing, and the database server is responsible for storing all game replays, user profiles, and relevant data.
@@ -138,13 +138,13 @@ If you want to deploy the frontend to S3 (See the section below), you need to in
     ```bash
     terraform apply
     // or
-    terraform apply -var='deploy_frontend_method=ec2'
+    terraform apply -var='frontend_deployment_method=ec2'
     ```
 
 - **Deploy the frontend to S3, and the backend to EC2, and the database to RDS**
 
     ```bash
-    terraform apply -var='deploy_frontend_method=s3'
+    terraform apply -var='frontend_deployment_method=s3'
     ```
 
 > Note that the default name of the S3 bucket is `algo-arena-frontend`, which might be occupied. So you can change it with the variable `frontend_bucket`.
@@ -158,7 +158,7 @@ If you want to deploy the frontend to S3 (See the section below), you need to in
 
 #### Illustration
 
-The reason why we provide two ways to deploy the project is that in the first way, we only need to install **Terraform** and **AWS CLI** on the local machine, and all the resources will be created on AWS and built automatically. However, we don't have another non-EC2 resource as the requirement of the assignment. 
+The reason why we provide two ways to deploy the project is that in the first way, we only need to install **Terraform** and **AWS CLI** on the local machine, and all the resources will be created on AWS and built automatically. However, we don't have another non-EC2 resource as the requirement of the assignment, and the frontend of the project is a static single-page application, which is no need to be deployed on Apache or Nginx on EC2.
 
 So in the second way, we deploy the frontend to S3, and the backend to EC2, and the database to RDS. In this way, we can meet the requirement of the assignment, but the drawback is that we need to build the frontend locally and upload it to S3, during which we need to install **Node.js** on the local machine. 
 
