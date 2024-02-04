@@ -1,12 +1,10 @@
-# COSC349 Cloud Computing Architecture
-
-Project name: Algo Arena
+# Algo Arena
 
 ## Get Started
 
 ```bash
-git clone https://github.com/ruiyi666/COSC349.git
-cd COSC349
+git clone https://github.com/ruiyi666/algo-arena.git
+cd algo-arena
 vagrant up
 ```
 
@@ -48,13 +46,13 @@ Choose one of the following virtualization providers:
 
 After installing the necessary requirements:
 
-**Clone the Repository**: 
-   Use the command `git clone https://github.com/ruiyi666/COSC349.git` to clone the Algo Arena repository to your local machine.
+**Clone the Repository**:
+Use the command `git clone https://github.com/ruiyi666/COSC349.git` to clone the Algo Arena repository to your local machine.
 
-**Navigate to the Project Directory**: 
-   Change your current directory to the Algo Arena directory by using the command `cd COSC349`.
+**Navigate to the Project Directory**:
+Change your current directory to the Algo Arena directory by using the command `cd COSC349`.
 
-**Start the Virtual Machines**: 
+**Start the Virtual Machines**:
 
 ```bash
 vagrant up --provider virtualbox
@@ -64,8 +62,8 @@ vagrant up --provider docker
 
 Use the above command to initiate and set up the virtual machines as per the configuration in the Vagrantfile. This command will set up the three core servers: frontend, backend, and database.
 
-**Access the Web Interface**: 
-   Once the setup completes, open your browser and navigate to `http://192.168.56.11:80/` or `http://localhost:8080/` to access the Algo Arena interface.
+**Access the Web Interface**:
+Once the setup completes, open your browser and navigate to `http://192.168.56.11:80/` or `http://localhost:8080/` to access the Algo Arena interface.
 
 ### Cleanup
 
@@ -105,7 +103,7 @@ aws configure
 terraform init
 ```
 
-Here we use EC2 as the deployment method. 
+Here we use EC2 as the deployment method.
 
 ```bash
 terraform apply
@@ -127,7 +125,7 @@ terraform destroy
 
 ## Future Prospects
 
-- **Game Replay**: Now, every action (or frame state) in the game is recorded in the database. And can be accessed via the backend API `/api/games/<game_id>/`. But the frontend does not support the replay of the game. In the future, we will add a replay feature to the frontend. 
+- **Game Replay**: Now, every action (or frame state) in the game is recorded in the database. And can be accessed via the backend API `/api/games/<game_id>/`. But the frontend does not support the replay of the game. In the future, we will add a replay feature to the frontend.
    - Next frame button
    - Previous frame button (a little bit difficult)
    - Play button
